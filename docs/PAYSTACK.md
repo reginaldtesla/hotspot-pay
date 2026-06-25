@@ -1,57 +1,131 @@
-# Paystack (live) — HTTPS and webhooks
+# Paystack — hotspot-pay
 
-Students pay for **data packages** only via Paystack. Fulfillment activates the plan in Laravel and FreeRADIUS after Paystack confirms payment (callback + webhook).
+Paystack configuration for the plain-PHP voucher service (`hotspot-pay`). This is **separate** from any Laravel portal billing.
 
-## Production `.env`
+---
 
-```env
-APP_ENV=production
-APP_DEBUG=false
-APP_URL=https://portal.yourdomain.com
-APP_FORCE_HTTPS=true
+## URLs to register
 
-PAYSTACK_PUBLIC_KEY=pk_live_...
-PAYSTACK_SECRET_KEY=sk_live_...
-PAYSTACK_CUSTOMER_EMAIL_DOMAIN=billing.yourdomain.com
+Replace `pay.tesnet.xyz` with your live hostname.
+
+| Purpose | URL |
+|---------|-----|
+| **Webhook** (required) | `https://pay.tesnet.xyz/webhook.php` |
+| Checkout callback | Set automatically by `buy.php` → `callback.php?ref=…&tok=…` |
+| Buy link (per package) | `https://pay.tesnet.xyz/buy.php?pkg=quick-surf` |
+
+In Paystack Dashboard → **Settings → API Keys & Webhooks**:
+
+1. Add webhook URL above.
+2. Enable event **`charge.success`**.
+3. Copy **public** and **secret** keys into `config.local.php`.
+
+---
+
+## Configuration (`config.local.php`)
+
+```php
+return [
+    'app_url' => 'https://pay.tesnet.xyz',
+    'paystack_public_key' => 'pk_live_xxxxxxxx',
+    'paystack_secret_key' => 'sk_live_xxxxxxxx',
+    'admin_password' => 'your-strong-password',
+    'checkout_email' => 'checkout@tesnet.xyz',
+];
 ```
 
-Students log in with **phone only**; Paystack still requires an email on initialize. The app sends `{phone}@your-domain` (not `@tesnet.local`, which Paystack rejects).
+| Key | Notes |
+|-----|--------|
+| `app_url` | Must match the URL students and Paystack reach (HTTPS in production, no trailing slash) |
+| `paystack_secret_key` | Used for API calls and webhook HMAC verification |
+| `checkout_email` | Paystack requires an email on initialize; hotspot buyers may not have one |
 
-`APP_URL` must be the **public HTTPS origin** students and Paystack use. Laravel builds callback and webhook URLs from named routes:
+Package amounts come from `config.php` → `amount_pesewas` (integer pesewas, e.g. GH¢ 3.50 → `350`).
 
-| Route | Path |
-| :--- | :--- |
-| Webhook | `POST /portal/payments/webhook` |
-| Callback (after checkout) | `GET /portal/payments/callback` (authenticated student) |
+---
 
-Full webhook URL to register in Paystack Dashboard → Settings → API & Webhooks:
+## Payment flow
 
 ```text
-https://portal.yourdomain.com/portal/payments/webhook
+buy.php
+  → POST /transaction/initialize (amount, reference, callback_url, metadata)
+  → redirect to Paystack hosted checkout
+
+User pays
+  → Paystack POST webhook.php (charge.success)
+  → HMAC verify → API verify transaction → hp_fulfill_payment()
+  → assign next available voucher code
+
+User browser
+  → callback.php → success.php (polls until code ready)
 ```
+
+**Webhook is the source of truth** for code assignment. The browser callback only redirects to the success page.
+
+---
 
 ## HTTPS requirements
 
-- Paystack **live** webhooks require a **public HTTPS** endpoint (not `http://192.168.88.2` on a LAN-only IP unless you tunnel).
-- Set `APP_FORCE_HTTPS=true` so `route()` and redirects use `https://` behind a reverse proxy or TLS terminator.
-- Terminate TLS on Apache/nginx/Caddy on the ProBook, or use **Cloudflare Tunnel** ([`CLOUDFLARE_TUNNEL.md`](CLOUDFLARE_TUNNEL.md)). Avoid ngrok for production — URLs change and break Paystack webhooks.
+- **Live** webhooks require a **public HTTPS** endpoint.
+- LAN-only IPs (e.g. `http://192.168.88.2`) will not receive Paystack webhooks unless tunneled.
+- Use Cloudflare Tunnel, reverse proxy TLS, or similar — see `deploy/cloudflared-ingress.example.yml`.
+- Avoid ephemeral tunnel URLs (ngrok free tier) in production; webhook URL must stay stable.
 
-## Paystack dashboard
+---
 
-1. Switch to **Live** mode.
-2. Paste the webhook URL above; enable `charge.success` (and any events your `PaymentController::webhook` handles).
-3. Copy **live** public/secret keys into `.env`.
-4. Confirm **callback URL** in initialize requests matches `route('portal.payments.callback')` (generated from `APP_URL`).
+## Test vs live
 
-## CSRF
+| Mode | Keys | Webhook |
+|------|------|---------|
+| Test | `pk_test_…` / `sk_test_…` | Same dashboard; use test cards |
+| Live | `pk_live_…` / `sk_live_…` | Production webhook URL |
 
-The webhook route is excluded from CSRF verification (see `bootstrap/app.php` or `VerifyCsrfToken` exceptions) so Paystack can `POST` signed payloads.
+Secret key **must** match the mode. Mismatch causes `401 Invalid signature` on webhook.
 
-## Local testing
+Paystack test cards: [Paystack docs](https://paystack.com/docs/payments/test-payments).
 
-- Use Paystack **test** keys and the test webhook URL from the dashboard.
-- `php artisan serve` binds `127.0.0.1` by default; use `--host=0.0.0.0` only on a trusted LAN, or expose via HTTPS tunnel for webhook delivery.
+---
 
-## Verify webhook delivery
+## Webhook behavior (`webhook.php`)
 
-After a test payment, check Laravel logs and the `transactions` table. Failed signature verification returns `400` — confirm `PAYSTACK_SECRET_KEY` matches the mode (test vs live).
+1. Read raw body; verify `X-Paystack-Signature` (HMAC-SHA512 with secret).
+2. Ignore events other than `charge.success`.
+3. Look up payment by `reference` in SQLite.
+4. Call Paystack verify API; confirm `status=success`, `currency=GHS`, amount matches.
+5. Run `hp_fulfill_payment()` — idempotent if already paid.
+6. Return `200 OK` on success.
+
+If no voucher stock: payment marked `paid_no_stock`; student sees support message on success page.
+
+---
+
+## Verify after setup
+
+| Check | How |
+|-------|-----|
+| Initialize works | Open `buy.php?pkg=quick-surf` — Paystack checkout opens |
+| Webhook delivered | Paystack dashboard → Webhooks → recent deliveries |
+| Code assigned | Admin → Sold codes; success page shows code |
+| Amount correct | Paystack charge matches `amount_pesewas` in config |
+
+Failed signature → wrong `paystack_secret_key` or body modified by proxy.
+
+---
+
+## MikroTik walled garden (Paystack)
+
+Students need these **before** hotspot login:
+
+| Host |
+|------|
+| Your pay host (`pay.tesnet.xyz`) |
+| `*.paystack.com` |
+| `js.paystack.co` |
+| `api.paystack.co` |
+
+---
+
+## Related
+
+- [**HOTSPOT_VOUCHER_PAY.md**](HOTSPOT_VOUCHER_PAY.md) — full flow and database
+- [**README.md**](../README.md) — setup and troubleshooting

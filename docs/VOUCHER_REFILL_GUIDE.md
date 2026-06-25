@@ -149,6 +149,10 @@ print_r(\$r);
 
 ## Related
 
-- **`docs/ADD_NEW_PACKAGE.md`** — new profile + price + login card
-- **`docs/HOTSPOT_VOUCHER_PAY.md`** — system design
+- [**README.md**](../README.md) — setup and troubleshooting
+- [**docs/README.md**](README.md) — documentation index
+- [**ADD_NEW_PACKAGE.md**](ADD_NEW_PACKAGE.md) — new profile + price + login card
+- [**HOTSPOT_VOUCHER_PAY.md**](HOTSPOT_VOUCHER_PAY.md) — system design
+- [**HOTSPOT.md**](HOTSPOT.md) — MikroTik integration
+- [**PAYSTACK.md**](PAYSTACK.md) — webhooks and keys
 - **`scripts/rsc-to-csv.py`** — converter source

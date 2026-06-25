@@ -1,89 +1,162 @@
-# MikroTik hotspot → Laravel portal
+# MikroTik hotspot — voucher pay integration
 
-TesNet no longer relies on PHPNuxBill or voucher HTML for day-to-day login. The **authoritative** login and payment UI is the Laravel app on the billing server.
+How the captive portal (`login.html` on the router) connects to **hotspot-pay** on your billing server.
 
-## Target flow
+This flow uses **pre-generated voucher codes** on MikroTik. It does not use Laravel, FreeRADIUS, or per-purchase API user creation.
 
-1. Student associates to Wi‑Fi and gets a hotspot login page from MikroTik.
-2. MikroTik redirects (or links) to **`https://<your-server>/portal/login`** (walled garden must allow this host).
-3. Student signs in with **phone + password** (same credentials synced to FreeRADIUS).
-4. After purchase, **Connect Wi‑Fi** posts to `MIKROTIK_LOGIN_URL` with a **hidden per-purchase** hotspot username (`tn-{purchase_id}`) and password — students still only know their **phone + portal password** for sign-in.
+---
+
+## End-to-end flow
+
+1. Student joins Wi‑Fi → MikroTik shows **`login.html`**.
+2. Student taps a **package card** → browser opens `https://pay.tesnet.xyz/buy.php?pkg=…`.
+3. Student pays on Paystack (MoMo/card).
+4. **webhook.php** assigns the next imported code from SQLite.
+5. **success.php** displays the code.
+6. Student returns to hotspot login, enters code as **username and password**, submits.
+
+Codes must already exist as MikroTik hotspot users (`/ip hotspot user`) with the correct profile and `limit-bytes-total`.
+
+---
+
+## What lives where
+
+| Item | Location |
+|------|----------|
+| `login.html`, `logout.html`, `status.html` | **MikroTik** hotspot HTML directory |
+| `TesNet.png` (logo) | Same MikroTik HTML folder |
+| `hotspot-pay/` | **ProBook** Apache (`pay.tesnet.xyz` → `public/`) |
+| Voucher users | MikroTik **IP → Hotspot → Users** |
+| Code pool for sale | SQLite on ProBook (`storage/pool.sqlite`) |
+
+**Source for `login.html`:** `MiniISP-Landing-page/login.html` in the marketing repo (edit there, re-upload to router).
+
+---
 
 ## Walled garden
 
-Add your Laravel host to MikroTik **IP → Hotspot → Walled Garden** (and DNS if you use a hostname), for example:
+Add to MikroTik **IP → Hotspot → Walled Garden** (and DNS if using hostnames):
 
-- Billing server IP: `192.168.88.2`
-- Or FQDN used in `APP_URL`
+| Host / pattern |
+|----------------|
+| `pay.tesnet.xyz` (or your pay hostname) |
+| `*.paystack.com` |
+| `js.paystack.co` |
+| `api.paystack.co` |
 
-Students must reach `/portal/login`, `/portal/register`, and Paystack-related paths **before** they have an active session.
+Without these, phones cannot reach checkout before authentication.
 
-## Retiring `login.html`
+---
 
-Legacy files in the repo (`login.html`, `TesNet/login.html`, `flash/hotspot/login.html`) redirected users to PHPNuxBill. For production:
+## `login.html` integration
 
-1. **Do not** upload a custom `login.html` that points to the old billing UI unless you still need a transitional redirect.
-2. Prefer MikroTik **Hotspot Server Profile** → **HTML** settings, or a minimal `login.html` that only redirects:
+The captive portal must redirect package taps to the pay server.
 
-   ```html
-   <meta http-equiv="refresh" content="0;url=https://YOUR_DOMAIN/portal/login?$(link-login-only)">
-   ```
+### JavaScript config
 
-   Adjust for your captive portal variables (`$(link-login-only)`, `$(link-orig)`, etc.) per RouterOS docs.
+```javascript
+var PAY_BASE = 'https://pay.tesnet.xyz';
+var PKG_SLUG = {
+    'Quick Surf': 'quick-surf',
+    'Student Choice': 'student-choice',
+    'Big Bundle': 'big-bundle',
+    'Heavy User': 'heavy-user',
+    'Hostel Legend': 'hostel-legend'
+};
+```
 
-3. Set **`MIKROTIK_LOGIN_URL`** in `.env` to the router’s HTTP login endpoint (e.g. `http://192.168.88.1/login`) used after the student is authorized in RADIUS.
+### Package cards
 
-## Per-purchase hotspot users (Model A)
+Each card needs `data-package` matching a `PKG_SLUG` key **exactly** (case and spacing):
 
-When `TESNET_PER_PURCHASE_HOTSPOT=true` (default):
+```html
+<div class="package-card" data-package="Quick Surf">
+    <div class="package-name">Quick Surf</div>
+    <div class="package-data">1GB</div>
+    <div class="package-price">GH¢3.5</div>
+    ...
+</div>
+```
 
-| Identity | Purpose |
-|----------|---------|
-| Phone + password | Portal login only (`users` table + `radcheck` for registration) |
-| `tn-{purchase_id}` + random password | Hotspot data bucket for **that payment only** |
+On click → `PAY_BASE + '/buy.php?pkg=' + slug`.
 
-On Paystack success, Laravel creates `/ip/hotspot/user` **`tn-*`** (via API), syncs matching **`radcheck`/`radreply`**, and disables the previous purchase’s `tn-*` user.
+### Voucher login (unchanged)
 
-**Router setup (once):** create profiles `tesnet-pkg` and `tesnet-custom` with `shared-users=1` and your rate limits. See `PROBOOK_MIKROTIK_FULL_SETUP.md` § Model A profiles.
+`doLogin()` sets username and password to the entered code and posts to MikroTik `$(link-login-only)`.
 
-**Cron:** `tesnet:cleanup-hotspot-users` weekly removes old `tn-*` users.
+### Optional code prefill
 
-## One account, one device (no sharing)
+If the success page links back with `?code=TN…`, JS can prefill the code field:
 
-- One **phone number** per registered student (duplicate registration blocked).
-- **`device_limit`** is always **1** for students (RADIUS `Simultaneous-Use` + MikroTik `shared-users=1` on profiles).
-- **New portal login** bumps `portal_session_version` — other browsers are signed out (`portal.single_session` middleware).
-- **Connect** disconnects any other active hotspot session for that account before opening a new one.
-- Students are told not to share passwords on login/register screens.
+```javascript
+var params = new URLSearchParams(window.location.search);
+if (params.get('code')) document.getElementById('code').value = params.get('code');
+```
 
-This stops two people using one account **at the same time**. It does not stop someone from handing over their password for use later (that is policy/trust).
+---
 
-Legacy purchases without `mikrotik_username` still use phone-based RADIUS limits until the student buys again.
+## Package sync checklist
 
-## FreeRADIUS
+These four must agree:
 
-- Portal accounts: `radcheck` on the **phone** (Cleartext-Password, Simultaneous-Use).
-- Per-purchase data: `radcheck`/`radreply` on **`tn-{id}`** (password, `Mikrotik-Total-Limit`, rate limit).
-- Dashboard usage uses **`radacct` + `package_purchases.bytes_consumed` + MikroTik API** scoped to the active **`tn-*`** username.
-- Hotspot profile must have **`radius-accounting=yes`** so `radacct` fills in MariaDB.
+| Layer | What to match |
+|-------|----------------|
+| MikroTik profile name | Winbox exact name (e.g. `Quick_Surf_1GB`) |
+| `hotspot-pay/config.php` | `mikrotik_profile`, `slug`, `amount_pesewas` |
+| `login.html` | Card label, `data-package`, `PKG_SLUG`, displayed price |
+| CSV import | `profile` column = MikroTik profile name |
 
-## When a package runs out
+Current catalog: see [**README.md**](../README.md#current-packages).
 
-1. Cron / **Connect** marks the purchase **depleted** and kicks the student off hotspot (**`MIKROTIK_API_ENABLED=true`** required for automatic kick).
-2. The phone should show **Sign in to network** again → MikroTik **`login.html`** must redirect to **`/portal/login`** (use `TesNet/mikrotik/login.html`, not the legacy voucher page in `TesNet/login.html`).
-3. Student signs in on the portal and buys a new package under **Buy Data**.
-4. **Connect to Internet** applies the new quota — do **not** rely on `Auth-Type Reject` for quota (only for suspended accounts); reject blocks the captive-portal flow.
+---
 
-If students stay online after data ends, upload the redirect `login.html` and enable the MikroTik API on the ProBook.
-- MikroTik hotspot auth for data sessions uses **`tn-{purchase_id}`** (RADIUS + optional local `/ip/hotspot/user` row for byte caps).
+## MikroTik user setup
 
-## Announcements
+For each voucher code:
 
-Admins post global notices under **Admin → Notifications**. Students see the latest active notice as a **modal** on the dashboard (“Got it” stores dismissal in `localStorage`).
+```text
+/ip hotspot user add name=TNXXXX password=TNXXXX profile=Quick_Surf_1GB \
+  server=all limit-bytes-total=1073741824 comment=Quick_Surf_1GB disabled=no
+```
 
-## Checklist
+- **name** = **password** = the code shown to the student
+- **profile** = rate limit / hotspot rules
+- **limit-bytes-total** = data cap in bytes
 
-- [ ] Laravel reachable from hotspot clients (walled garden)
-- [ ] `APP_URL` matches the URL students use (HTTPS in production)
-- [ ] FreeRADIUS + MikroTik RADIUS client configured
-- [ ] Legacy PHPNuxBill `login.html` removed or replaced with Laravel redirect
+Then export and import into hotspot-pay — see [**VOUCHER_REFILL_GUIDE.md**](VOUCHER_REFILL_GUIDE.md).
+
+---
+
+## Upload HTML to MikroTik
+
+1. Edit `MiniISP-Landing-page/login.html` on your PC.
+2. Upload to router: Winbox → **Files** → hotspot HTML directory, or **IP → Hotspot → Server Profiles → Login** tab.
+3. Include `TesNet.png` if referenced.
+
+Test on a phone on Wi‑Fi: tap package → Paystack opens; after pay → code works on login.
+
+---
+
+## `logout.html` / `status.html`
+
+No Paystack logic required. Optional footer: “Buy more data” linking to `$(link-login)`.
+
+---
+
+## Troubleshooting
+
+| Problem | Fix |
+|---------|-----|
+| Tap package, nothing happens | `data-package` not in `PKG_SLUG` |
+| Paystack won’t load on phone | Walled garden missing pay/Paystack hosts |
+| Code invalid on login | User not created on MikroTik, or wrong profile |
+| Paid but no code | Import pool empty; check webhook + admin stock |
+| Wrong price at checkout | `config.php` `amount_pesewas` ≠ card display (card is cosmetic; Paystack uses config) |
+
+---
+
+## Related
+
+- [**ADD_NEW_PACKAGE.md**](ADD_NEW_PACKAGE.md) — new package end-to-end
+- [**VOUCHER_REFILL_GUIDE.md**](VOUCHER_REFILL_GUIDE.md) — refill stock
+- [**HOTSPOT_VOUCHER_PAY.md**](HOTSPOT_VOUCHER_PAY.md) — server-side design

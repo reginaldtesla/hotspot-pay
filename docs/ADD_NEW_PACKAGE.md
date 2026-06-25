@@ -7,7 +7,7 @@ MikroTik profile + voucher users
         ↓
 hotspot-pay/config.php  (price, slug, profile name)
         ↓
-login.html (+ login-preview.html, index.html)  (card users tap)
+login.html (+ login-preview.html, index.html)  (card users tap — source: MiniISP-Landing-page/)
         ↓
 Import CSV codes into payment pool
 ```
@@ -113,7 +113,7 @@ After deploy, the SQLite `packages` table updates automatically on the next page
 
 ## Step 4 — Show the package on `login.html` (hotspot)
 
-Edit **`login.html`** in the repo root (then re-upload to MikroTik).
+Edit **`MiniISP-Landing-page/login.html`** (then re-upload to MikroTik).
 
 ### 4a. Add a package card
 
@@ -177,7 +177,7 @@ Download `.rsc` → convert → import (see **`docs/VOUCHER_REFILL_GUIDE.md`**).
 **Windows:**
 
 ```powershell
-cd C:\Apache24\htdocs\TesNet\hotspot-pay\scripts
+cd C:\Apache24\htdocs\hotspot-pay\scripts
 python rsc-to-csv.py "C:\Users\RegiTes\Downloads\tesnet-night-owl.rsc" -o "C:\Users\RegiTes\Downloads\night-owl.csv"
 ```
 
@@ -258,6 +258,9 @@ Admin stock should show **Night Owl — 100 available** (or your count).
 
 ## Related docs
 
-- **`docs/VOUCHER_REFILL_GUIDE.md`** — more codes for an existing package
-- **`docs/HOTSPOT_VOUCHER_PAY.md`** — system design
-- **`hotspot-pay/scripts/rsc-to-csv.py`** — export converter
+- [**README.md**](../README.md) — setup and package table
+- [**VOUCHER_REFILL_GUIDE.md**](VOUCHER_REFILL_GUIDE.md) — more codes for an existing package
+- [**HOTSPOT_VOUCHER_PAY.md**](HOTSPOT_VOUCHER_PAY.md) — system design
+- [**HOTSPOT.md**](HOTSPOT.md) — MikroTik + login.html integration
+- [**PAYSTACK.md**](PAYSTACK.md) — webhooks and keys
+- **`scripts/rsc-to-csv.py`** — export converter

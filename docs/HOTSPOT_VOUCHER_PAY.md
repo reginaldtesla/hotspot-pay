@@ -1,18 +1,17 @@
-# TesNet Hotspot Voucher Pay — design (no Laravel)
+# TesNet Hotspot Voucher Pay — architecture
 
-Plain PHP service on the **ProBook** + MikroTik-hosted **`login.html`**, **`logout.html`**, **`status.html`** from the repo root.
+Plain PHP on the **ProBook** + MikroTik-hosted **`login.html`**. Laravel and the portal app are **not** part of this flow.
 
-Laravel (`TesNet/`) stays separate and is **not** used for this flow.
+**Status:** Implemented. See [**README.md**](../README.md) for setup.
 
 ---
 
 ## Goals
 
-1. Student on Wi‑Fi sees **your existing** hotspot pages on MikroTik.
-2. Taps a **package** → pays with **Paystack** (MoMo/card).
-3. After Paystack confirms payment, backend **assigns the next available code** from your pre-imported pool (codes already exist in MikroTik → Hotspot → Users).
-4. Success page shows the code; student enters it on **`login.html`** (username = password = code).
-5. **`logout.html`** and **`status.html`** unchanged except optional copy tweaks.
+1. Student on Wi‑Fi sees the hotspot captive portal (`login.html` on MikroTik).
+2. Taps a package → pays with **Paystack** (MoMo/card).
+3. After Paystack confirms, backend **assigns the next available code** from the pre-imported SQLite pool.
+4. Success page shows the code; student enters it on `login.html` (username = password = code).
 
 ---
 
@@ -20,11 +19,11 @@ Laravel (`TesNet/`) stays separate and is **not** used for this flow.
 
 | Component | Location |
 |-----------|----------|
-| `login.html`, `logout.html`, `status.html` | **MikroTik** (upload from repo root) |
-| `TesNet.png` (logo on login) | MikroTik hotspot HTML directory |
-| **`hotspot-pay/`** (plain PHP) | **ProBook** Apache (`/var/www/.../hotspot-pay` or vhost) |
-| Code pool + payment log | SQLite file or MariaDB on ProBook |
-| Paystack webhook | HTTPS URL on ProBook (domain + Cloudflare Tunnel) |
+| `login.html`, `logout.html`, `status.html` | **MikroTik** (upload from `MiniISP-Landing-page/`) |
+| `TesNet.png` | MikroTik hotspot HTML directory |
+| **`hotspot-pay/`** | **ProBook** Apache — vhost `pay.tesnet.xyz` → `public/` |
+| Code pool + payments | SQLite `storage/pool.sqlite` |
+| Paystack webhook | `https://pay.tesnet.xyz/webhook.php` (HTTPS + tunnel) |
 
 ```text
   Student phone
@@ -33,16 +32,14 @@ Laravel (`TesNet/`) stays separate and is **not** used for this flow.
   MikroTik captive portal (login.html)
        │  tap package
        ▼
-  https://pay.YOURDOMAIN.com/buy.php?pkg=hostel-legend
+  https://pay.tesnet.xyz/buy.php?pkg=hostel-legend
        │
        ▼
   Paystack checkout
        │
-       ▼
-  POST webhook → ProBook hotspot-pay/webhook.php
-       │  assign next code from pool
-       ▼
-  success.php → "Your code: TN5GU6ONSXM4"
+       ├── POST webhook.php → assign code (source of truth)
+       │
+       └── redirect callback.php → success.php (poll for code)
        │
        ▼
   Back to login.html → enter code → Wi‑Fi
@@ -50,61 +47,61 @@ Laravel (`TesNet/`) stays separate and is **not** used for this flow.
 
 ---
 
-## Tech stack (simple)
+## Tech stack
 
 | Piece | Choice |
 |-------|--------|
-| Language | **PHP 8.1+** (no framework) |
-| Database | **SQLite** (`storage/pool.sqlite`) — zero setup; optional MariaDB later |
-| Config | `hotspot-pay/config.php` + `config.local.php` (gitignored secrets) |
-| Paystack | cURL initialize + verify webhook HMAC |
-| Admin | `admin/import.php` (CSV upload) + basic password in config |
-| Sessions | None for buyers; admin cookie or HTTP basic |
-
-No Composer required for v1 (optional `vlucas/phpdotenv` later).
+| Language | PHP 8.1+ (no framework, no Composer) |
+| Database | SQLite (`storage/pool.sqlite`) |
+| Config | `config.php` + `config.local.php` (gitignored) |
+| Paystack | cURL initialize + webhook HMAC + transaction verify |
+| Admin | Password session; import + stock + sold views |
+| Buyer sessions | None; access via `ref` + `tok` on success URL |
 
 ---
 
-## Folder layout (new, repo root)
+## Folder layout
 
 ```text
-TesNet/                          ← repo root
-├── login.html                   ← upload to MikroTik (edit Pay links)
-├── logout.html                  ← upload to MikroTik (no logic change)
-├── status.html                  ← upload to MikroTik (no logic change)
-├── TesNet.png                   ← logo for login.html
-├── docs/HOTSPOT_VOUCHER_PAY.md  ← this file
-└── hotspot-pay/
-    ├── config.php               ← packages, URLs (no secrets)
-    ├── config.local.php.example
-    ├── config.local.php         ← PAYSTACK_SECRET, ADMIN_PASSWORD (gitignore)
-    ├── lib/
-    │   ├── bootstrap.php        ← config, SQLite PDO, helpers
-    │   ├── pool.php             ← import, assign, stock counts
-    │   └── paystack.php         ← initialize, verify webhook
-    ├── public/                  ← Apache document root
-    │   ├── buy.php              ← start checkout for ?pkg=
-    │   ├── callback.php         ← Paystack redirect (poll until assigned)
-    │   ├── success.php          ← show code
-    │   ├── webhook.php          ← Paystack POST
-    │   └── assets/style.css     ← minimal success page
-    ├── admin/
-    │   ├── index.php            ← stock per package
-    │   └── import.php           ← upload CSV
-    ├── storage/
-    │   ├── pool.sqlite          ← gitignore
-    │   └── schema.sql
-    └── data/
-        └── packages.example.csv ← code import template
+hotspot-pay/
+├── config.php
+├── config.local.php.example
+├── config.local.php              # gitignored
+├── lib/
+│   ├── bootstrap.php             # config merge, PDO, migrations, seed
+│   ├── pool.php                  # import, stock, fulfillment
+│   └── paystack.php              # API + signature verify
+├── public/                       # Apache document root
+│   ├── index.php
+│   ├── buy.php
+│   ├── callback.php
+│   ├── success.php
+│   ├── webhook.php
+│   └── assets/style.css
+├── admin/                        # Alias /admin
+│   ├── auth.php
+│   ├── index.php                 # stock summary
+│   ├── import.php
+│   └── sold.php
+├── storage/
+│   ├── schema.sql
+│   └── pool.sqlite               # gitignored
+├── data/
+│   └── packages.example.csv
+├── scripts/
+│   ├── rsc-to-csv.py
+│   └── rsc-to-csv.php
+├── deploy/
+└── docs/
 ```
-
-Apache on ProBook: point vhost `pay.yourdomain.com` → `hotspot-pay/public/`.
 
 ---
 
 ## Database (SQLite)
 
-### `packages` (catalog — matches login.html cards)
+Schema: `storage/schema.sql`. Packages auto-seeded from `config.php` via `hp_seed_packages()`.
+
+### `packages`
 
 | Column | Example |
 |--------|---------|
@@ -112,236 +109,166 @@ Apache on ProBook: point vhost `pay.yourdomain.com` → `hotspot-pay/public/`.
 | name | `Hostel Legend` |
 | data_label | `45GB` |
 | amount_pesewas | `9500` |
-| mikrotik_profile | `Hostel_Legen...` (exact WinBox name) |
+| mikrotik_profile | `Hostel_Legend_45GB` |
 | sort_order | `5` |
 | is_active | `1` |
 
-### `voucher_codes` (your document import)
+### `voucher_codes`
 
 | Column | Example |
 |--------|---------|
-| id | auto |
-| code | `TN5GU6ONSXM4` |
+| code | `TN5GU6ONSXM4` (unique) |
 | package_slug | `hostel-legend` |
 | status | `available` / `assigned` / `revoked` |
 | paystack_reference | set on sale |
-| buyer_email | from Paystack |
-| buyer_phone | from Paystack metadata |
+| buyer_email, buyer_phone | from Paystack |
 | assigned_at | datetime |
-| created_at | import time |
 
-### `payments` (audit)
+### `payments`
 
 | Column | Example |
 |--------|---------|
-| reference | Paystack ref |
+| reference | `HP-…` (Paystack reference) |
+| access_token | secret token for success page access |
 | package_slug | `hostel-legend` |
 | amount_pesewas | `9500` |
-| status | `pending` / `paid` / `failed` |
+| status | `pending` / `paid` / `paid_no_stock` |
 | voucher_code_id | FK after assign |
+| paid_at | datetime |
 
 ---
 
-## Code import (your document)
+## Code import
 
-CSV you send (one row per MikroTik user already created in WinBox):
+CSV (admin upload or CLI):
 
 ```csv
-code,package_slug
-TN5GU6ONSXM4,hostel-legend
-TN2TIBWYJ8LR,hostel-legend
-TNVHG9TFABT3,quick-surf
+code,profile
+TNPMZBY84G4H,Quick_Surf_1GB
 ```
 
-Rules:
+Or `code,package_slug`. Rules:
 
-- Code must **already exist** on MikroTik (Hotspot → Users).
-- `package_slug` must match a row in `packages`.
-- Import skips duplicates; admin UI shows counts per package.
+- Code must **already exist** on MikroTik as a hotspot user.
+- Profile or slug must match `config.php`.
+- Duplicates skipped (`INSERT OR IGNORE`).
+
+Convert MikroTik exports: `scripts/rsc-to-csv.py`.
 
 ---
 
-## Paystack flow
+## Payment flow (implemented)
 
-### 1. `buy.php?pkg=hostel-legend`
+### 1. `buy.php?pkg={slug}`
 
-- Validate package active and **stock > 0** (count `voucher_codes` where `status=available`).
-- Create `payments` row `pending`, generate reference `HP-{random}`.
-- POST Paystack `/transaction/initialize`:
-  - `amount` = package pesewas
-  - `email` = `buyer@billing.yourdomain.com` or collect phone on small form
-  - `callback_url` = `https://pay.YOURDOMAIN.com/callback.php?ref=...`
-  - `metadata`: `package_slug`, `payment_id`
-- Redirect user to Paystack authorization URL.
+- Validate package active and stock > 0.
+- Create `payments` row (`pending`) with `reference` + `access_token`.
+- POST Paystack `/transaction/initialize` (amount, email, callback with `ref` + `tok`).
+- Redirect to Paystack authorization URL.
 
-### 2. `webhook.php` (source of truth)
+### 2. `webhook.php` (fulfillment)
 
-- Verify `x-paystack-signature` with secret key.
-- On `charge.success`: idempotent on `reference`.
-- Transaction:
-  - `SELECT code FROM voucher_codes WHERE package_slug=? AND status='available' ORDER BY id LIMIT 1` (lock row).
-  - If none → log alert, mark payment `paid_no_stock` (manual refund).
-  - Else set code `assigned`, link `payments` + `voucher_code_id`.
-- **Never** assign code from browser callback alone.
+- Verify `X-Paystack-Signature`.
+- On `charge.success`: verify transaction via API (status, GHS, amount).
+- `hp_fulfill_payment()` in a transaction:
+  - Idempotent if already `paid`.
+  - `SELECT` oldest `available` code for package; mark `assigned`.
+  - If none: `paid_no_stock`.
 
 ### 3. `callback.php` + `success.php`
 
-- User returns from Paystack.
-- Poll DB (or wait for webhook) until `payments.status=paid` and code assigned.
-- `success.php` displays:
+- `callback.php` redirects to `success.php?ref=…&tok=…`.
+- `success.php` polls (`?poll=1`) until code assigned or `paid_no_stock`.
+- Code displayed only when `access_token` matches.
 
-  > Payment received  
-  > **Your login code:** `TN5GU6ONSXM4`  
-  > Go back to Wi‑Fi login and enter this code (same for password).
-
-Optional: `?code=` deep link — login.html JS reads query and prefills `#code`.
+**Never assign codes from the browser callback alone.**
 
 ---
 
-## Changes to `login.html` (repo root)
+## Package catalog
 
-Keep MikroTik variables: `$(link-login-only)`, `$(link-status)`, `$(error)`, etc.
+| Card name | slug | GH¢ | MikroTik profile |
+|-----------|------|-----|------------------|
+| Quick Surf | `quick-surf` | 3.50 | `Quick_Surf_1GB` |
+| Student Choice | `student-choice` | 9.00 | `Student_Choice_3GB` |
+| Big Bundle | `big-bundle` | 18.00 | `Big_Bundle_7GB` |
+| Heavy User | `heavy-user` | 35.00 | `Heavy_User_15GB` |
+| Hostel Legend | `hostel-legend` | 95.00 | `Hostel_Legend_45GB` |
 
-### Replace manual MoMo block
+Defined in `config.php`; must stay in sync with `login.html` cards and `PKG_SLUG`.
 
-Remove Telecel number block; replace with:
+---
 
-- Short line: “Pay with MoMo or card — get your code instantly.”
-- Package cards: on click → redirect to pay server (not scroll to MoMo).
+## Configuration
 
-### Add config line (top of script)
+**`config.php`** — packages, `profile_to_slug`, `app_url` default.
 
-```javascript
-var PAY_BASE = 'https://pay.YOURDOMAIN.com';  // ProBook + tunnel
-var PKG_SLUG = {
-  'Quick Surf': 'quick-surf',
-  'Student Choice': 'student-choice',
-  'Big Bundle': 'big-bundle',
-  'Heavy User': 'heavy-user',
-  'Hostel Legend': 'hostel-legend'
-};
+**`config.local.php`** — secrets:
+
+```php
+return [
+    'app_url' => 'https://pay.tesnet.xyz',
+    'paystack_public_key' => 'pk_live_…',
+    'paystack_secret_key' => 'sk_live_…',
+    'admin_password' => '…',
+    'checkout_email' => 'checkout@tesnet.xyz',
+];
 ```
 
-### Package click handler
-
-```javascript
-card.addEventListener('click', function () {
-  var name = card.getAttribute('data-package');
-  var slug = PKG_SLUG[name];
-  if (!slug) return;
-  window.location.href = PAY_BASE + '/buy.php?pkg=' + encodeURIComponent(slug);
-});
-```
-
-### Voucher login (unchanged)
-
-- `doLogin()` sets username/password = code → submit to `$(link-login-only)`.
-
-### Prefill after payment
-
-```javascript
-var params = new URLSearchParams(window.location.search);
-if (params.get('code')) document.getElementById('code').value = params.get('code');
-```
-
-Success page can link: `$(link-login)?code=TNxxx` — only if MikroTik preserves query on login page (test on router).
-
-### `logout.html` / `status.html`
-
-No Paystack changes. Optional footer link: “Buy more data” → `$(link-login)`.
-
 ---
 
-## Package catalog (sync with login.html)
+## Apache deployment
 
-| Card name (login.html) | slug | Price (GH¢) | Profile (WinBox) |
-|------------------------|------|---------------|------------------|
-| Quick Surf | `quick-surf` | 3.50 | `Quick_Surf_1...` |
-| Student Choice | `student-choice` | 9.00 | `Student_Choi...` |
-| Big Bundle | `big-bundle` | 18.00 | `Big_Bundle_7...` |
-| Heavy User | `heavy-user` | 35.00 | `Heavy_Gamer...` |
-| Hostel Legend | `hostel-legend` | 95.00 | `Hostel_Legen...` |
+- DocumentRoot → `hotspot-pay/public`
+- `Alias /admin` → `hotspot-pay/admin`
+- Deny `storage/`, `lib/`, `config.php`, `config.local.php`
 
-Stored in `hotspot-pay/config.php` and seeded into SQLite `packages` on first run.
+Examples:
 
----
+- Linux: `deploy/apache-pay.tesnet.xyz.conf.example`
+- Windows: `C:\Apache24\conf\extra\httpd-pay-tesnet.conf`
 
-## ProBook + domain
-
-```env
-# config.local.php
-PAYSTACK_PUBLIC_KEY=pk_live_...
-PAYSTACK_SECRET_KEY=sk_live_...
-APP_URL=https://pay.yourdomain.com
-ADMIN_PASSWORD=...
-```
-
-- **Cloudflare Tunnel** → ProBook Apache → `hotspot-pay/public`
-- Paystack dashboard webhook: `https://pay.yourdomain.com/webhook.php`
-
-Laravel `TesNet/` can remain on same machine different path (`/portal`) or be retired later for students.
-
----
-
-## MikroTik walled garden
-
-Allow **before** login:
-
-| Host |
-|------|
-| `pay.yourdomain.com` |
-| `*.paystack.com` |
-| `js.paystack.co` |
-| `api.paystack.co` |
-
-Upload HTML files: **IP → Hotspot → Server Profiles → HTML** (or file manager).
-
----
-
-## Admin workflow (you)
-
-1. Create `TN…` users in WinBox with correct profile + `limit-bytes-total`.
-2. Export codes to CSV → **Admin → Import**.
-3. Monitor **Admin → Stock** (e.g. Hostel Legend: 12 available).
-4. When low, create more users in WinBox and import again.
+Cloudflare Tunnel: `deploy/cloudflared-ingress.example.yml`.
 
 ---
 
 ## Security
 
-- Webhook: HMAC verify only; no CSRF on webhook.
-- `buy.php`: rate limit by IP (simple file-based or MikroTik).
-- Admin: password + optional IP allowlist (192.168.88.0/24).
-- SQLite file outside `public/` (only `public/*.php` exposed).
+| Control | Implementation |
+|---------|----------------|
+| Webhook authenticity | HMAC-SHA512 |
+| Payment amount | Verified against Paystack API response |
+| Success page | Requires matching `access_token` |
+| Admin | Password + rate limit on failed logins |
+| Secrets / DB | Outside `public/`; Apache deny rules |
+| Voucher CSVs | Gitignored (`data/vouchers-import.csv`) |
 
 ---
 
-## Out of scope (v1)
+## Admin workflow
 
-- Auto-create MikroTik users via API
-- SMS delivery of codes
-- Laravel portal integration
-- RADIUS (auth is MikroTik local hotspot users)
-
----
-
-## Implementation order
-
-1. `hotspot-pay/` scaffold + SQLite schema + `packages` seed from config.
-2. `admin/import.php` + sample CSV.
-3. `buy.php` + Paystack initialize.
-4. `webhook.php` + pool assign.
-5. `success.php` + `callback.php`.
-6. Edit **`login.html`** package clicks → `PAY_BASE`.
-7. Deploy ProBook vhost + Cloudflare Tunnel + Paystack webhook.
-8. Upload **`login.html`**, **`logout.html`**, **`status.html`** to MikroTik.
-9. Test: buy → code → login.
+1. Create voucher users on MikroTik (profile + byte limit).
+2. Export → `rsc-to-csv` → **Admin → Import**.
+3. Monitor **Stock** and **Sold codes**.
+4. Refill when low — [**VOUCHER_REFILL_GUIDE.md**](VOUCHER_REFILL_GUIDE.md).
 
 ---
 
-## What you provide before build
+## Out of scope
 
-1. CSV of available codes per package.
-2. Exact MikroTik **profile names** (copy from WinBox).
-3. Paystack live/test keys.
-4. Domain or tunnel hostname for `pay.YOURDOMAIN.com`.
+- Auto-create MikroTik users via API on payment
+- SMS code delivery
+- Laravel / RADIUS integration
+- Per-purchase dynamic hotspot users
+
+---
+
+## Related docs
+
+| Doc | Topic |
+|-----|--------|
+| [**README.md**](../README.md) | Setup, troubleshooting |
+| [**PAYSTACK.md**](PAYSTACK.md) | Webhooks and keys |
+| [**HOTSPOT.md**](HOTSPOT.md) | MikroTik + login.html |
+| [**ADD_NEW_PACKAGE.md**](ADD_NEW_PACKAGE.md) | New package |
+| [**VOUCHER_REFILL_GUIDE.md**](VOUCHER_REFILL_GUIDE.md) | Refill stock |
