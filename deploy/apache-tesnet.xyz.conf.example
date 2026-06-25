@@ -1,0 +1,18 @@
+# Main marketing site — tesnet.xyz
+# sudo cp ... /etc/apache2/sites-available/tesnet.xyz.conf && sudo a2ensite tesnet.xyz.conf
+
+<VirtualHost *:80>
+    ServerName tesnet.xyz
+    ServerAlias www.tesnet.xyz
+
+    DocumentRoot /var/www/MiniISP-Landing-page
+
+    <Directory /var/www/MiniISP-Landing-page>
+        AllowOverride None
+        Require all granted
+        DirectoryIndex index.html
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/tesnet-xyz-error.log
+    CustomLog ${APACHE_LOG_DIR}/tesnet-xyz-access.log combined
+</VirtualHost>

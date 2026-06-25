@@ -1,0 +1,36 @@
+# Apache vhost for ProBook (Linux) — adjust paths and enable:
+# sudo cp deploy/apache-pay.tesnet.xyz.conf.example /etc/apache2/sites-available/pay.tesnet.xyz.conf
+# sudo a2ensite pay.tesnet.xyz.conf && sudo systemctl reload apache2
+#
+# Windows dev copy lives at: C:\Apache24\conf\extra\httpd-pay-tesnet.conf
+
+<VirtualHost *:80>
+    ServerName pay.tesnet.xyz
+
+    DocumentRoot /var/www/MiniISP-Landing-page/hotspot-pay/public
+
+    <Directory /var/www/MiniISP-Landing-page/hotspot-pay/public>
+        AllowOverride None
+        Require all granted
+    </Directory>
+
+    # Block direct web access to secrets and the voucher database.
+    <Directory /var/www/MiniISP-Landing-page/hotspot-pay/storage>
+        Require all denied
+    </Directory>
+    <Directory /var/www/MiniISP-Landing-page/hotspot-pay/lib>
+        Require all denied
+    </Directory>
+    <FilesMatch "^(config\.php|config\.local\.php)$">
+        Require all denied
+    </FilesMatch>
+
+    # Admin UI (outside public docroot)
+    Alias /admin /var/www/MiniISP-Landing-page/hotspot-pay/admin
+    <Directory /var/www/MiniISP-Landing-page/hotspot-pay/admin>
+        Require all granted
+    </Directory>
+
+    ErrorLog ${APACHE_LOG_DIR}/pay-tesnet-error.log
+    CustomLog ${APACHE_LOG_DIR}/pay-tesnet-access.log combined
+</VirtualHost>

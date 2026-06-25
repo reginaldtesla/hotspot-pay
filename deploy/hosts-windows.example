@@ -1,0 +1,4 @@
+# Optional — local testing of pay.tesnet.xyz vhost on Windows
+# Add this line to C:\Windows\System32\drivers\etc\hosts (requires Administrator Notepad):
+#
+127.0.0.1 pay.tesnet.xyz

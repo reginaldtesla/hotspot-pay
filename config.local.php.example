@@ -1,0 +1,15 @@
+<?php
+
+declare(strict_types=1);
+
+/**
+ * Copy to config.local.php and fill in secrets (gitignored).
+ */
+return [
+    'app_url' => 'https://pay.tesnet.xyz',
+    'paystack_public_key' => 'pk_test_xxxxxxxx',
+    'paystack_secret_key' => 'sk_test_xxxxxxxx',
+    'admin_password' => 'change-me-to-a-strong-password',
+    // Paystack requires an email; buyers may not have one on hotspot.
+    'checkout_email' => 'checkout@tesnet.xyz',
+];

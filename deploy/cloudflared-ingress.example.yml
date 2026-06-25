@@ -1,0 +1,15 @@
+# Add tesnet.xyz to /etc/cloudflared/config.yml ingress (keep pay.tesnet.xyz too):
+#
+# ingress:
+#   - hostname: pay.tesnet.xyz
+#     service: http://localhost:80
+#   - hostname: tesnet.xyz
+#     service: http://localhost:80
+#   - hostname: www.tesnet.xyz
+#     service: http://localhost:80
+#   - service: http_status:404
+#
+# Then:
+#   cloudflared tunnel route dns tesnet-pay tesnet.xyz
+#   cloudflared tunnel route dns tesnet-pay www.tesnet.xyz
+#   sudo systemctl restart cloudflared
