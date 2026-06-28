@@ -1,0 +1,24 @@
+# /etc/cloudflared/config.yml — copy after: cloudflared tunnel create tesnet-pay
+#
+#   sudo cp deploy/cloudflared-config.example.yml /etc/cloudflared/config.yml
+#   sudo nano /etc/cloudflared/config.yml   # set tunnel UUID + credentials path
+#
+# DNS (run once per hostname):
+#   cloudflared tunnel route dns tesnet-pay pay.tesnet.xyz
+#   cloudflared tunnel route dns tesnet-pay tesnet.xyz
+#   cloudflared tunnel route dns tesnet-pay www.tesnet.xyz
+#
+#   sudo cloudflared service install
+#   sudo systemctl enable --now cloudflared
+
+tunnel: REPLACE-WITH-TUNNEL-UUID
+credentials-file: /etc/cloudflared/tesnet-pay.json
+
+ingress:
+  - hostname: pay.tesnet.xyz
+    service: http://localhost:80
+  - hostname: tesnet.xyz
+    service: http://localhost:80
+  - hostname: www.tesnet.xyz
+    service: http://localhost:80
+  - service: http_status:404

@@ -51,7 +51,7 @@ Plain PHP on the **ProBook** + MikroTik-hosted **`login.html`**. Laravel and the
 
 | Piece | Choice |
 |-------|--------|
-| Language | PHP 8.1+ (no framework, no Composer) |
+| Language | PHP 8.5+ on Ubuntu 26.04+ (no framework, no Composer) |
 | Database | SQLite (`storage/pool.sqlite`) |
 | Config | `config.php` + `config.local.php` (gitignored) |
 | Paystack | cURL initialize + webhook HMAC + transaction verify |

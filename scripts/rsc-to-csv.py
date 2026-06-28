@@ -24,7 +24,9 @@ def parse_rsc(text: str) -> list[tuple[str, str]]:
 
     for line in text.splitlines():
         line = line.strip()
-        if not line.startswith("add ") or "limit-bytes-total" not in line:
+        if not line.startswith("add "):
+            continue
+        if "limit-bytes-total" not in line and "limit-uptime" not in line:
             continue
         if "profile=" not in line:
             continue

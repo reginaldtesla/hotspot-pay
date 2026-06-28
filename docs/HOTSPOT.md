@@ -2,6 +2,8 @@
 
 How the captive portal (`login.html` on the router) connects to **hotspot-pay** on your billing server.
 
+**Full site rebuild (factory reset, dual Turbonet WAN, Layout B):** [**MIKROTIK_SITE_SETUP.md**](MIKROTIK_SITE_SETUP.md)
+
 This flow uses **pre-generated voucher codes** on MikroTik. It does not use Laravel, FreeRADIUS, or per-purchase API user creation.
 
 ---

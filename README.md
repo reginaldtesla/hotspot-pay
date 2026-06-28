@@ -117,7 +117,10 @@ chmod 750 storage
 
 ### 3. HTTPS / tunnel
 
-Expose `pay.tesnet.xyz` with TLS (Cloudflare Tunnel example: `deploy/cloudflared-ingress.example.yml`).
+Expose hostnames with **Cloudflare Tunnel** (recommended for tesnet.xyz):
+
+- Full guide: [**docs/INSTALL_UBUNTU_CLOUDFLARE.md**](docs/INSTALL_UBUNTU_CLOUDFLARE.md)
+- Template: `deploy/cloudflared-config.example.yml`
 
 ### 4. Paystack dashboard
 
@@ -182,8 +185,11 @@ No packages are configured. Add entries to `config.php` and follow [**docs/ADD_N
 
 | Doc | Contents |
 |-----|----------|
+| [**docs/UBUNTU_SERVER_FIRST_SETUP.md**](docs/UBUNTU_SERVER_FIRST_SETUP.md) | First Ubuntu install (USB, wipe disk, network, SSH) |
+| [**docs/INSTALL_UBUNTU_CLOUDFLARE.md**](docs/INSTALL_UBUNTU_CLOUDFLARE.md) | Apache, git, Cloudflare tunnel, Paystack (production) |
 | [**docs/HOTSPOT_VOUCHER_PAY.md**](docs/HOTSPOT_VOUCHER_PAY.md) | Architecture, database, payment flow |
 | [**docs/PAYSTACK.md**](docs/PAYSTACK.md) | Keys, webhooks, test vs live |
+| [**docs/MIKROTIK_SITE_SETUP.md**](docs/MIKROTIK_SITE_SETUP.md) | MikroTik factory reset, dual Turbonet WAN, hotspot from scratch |
 | [**docs/HOTSPOT.md**](docs/HOTSPOT.md) | MikroTik walled garden, `login.html` |
 | [**docs/VOUCHER_REFILL_GUIDE.md**](docs/VOUCHER_REFILL_GUIDE.md) | Add more codes to an existing package |
 | [**docs/ADD_NEW_PACKAGE.md**](docs/ADD_NEW_PACKAGE.md) | New profile, price, and login card |

@@ -32,7 +32,10 @@ $seen = [];
 
 foreach (explode("\n", $text) as $line) {
     $line = trim($line);
-    if (! str_starts_with($line, 'add ') || ! str_contains($line, 'limit-bytes-total')) {
+    if (! str_starts_with($line, 'add ')) {
+        continue;
+    }
+    if (! str_contains($line, 'limit-bytes-total') && ! str_contains($line, 'limit-uptime')) {
         continue;
     }
     if (! str_contains($line, 'profile=')) {

@@ -30,10 +30,42 @@ Winbox → **IP → Hotspot → Users**, or terminal.
 
 Example: **100 more** codes for **Quick Surf** (`Quick_Surf_1GB`, 1 GB = `1073741824` bytes):
 
-```text
+```text quick surf
 :local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Quick_Surf_1GB server=all limit-bytes-total=1073741824 comment=Quick_Surf_1GB disabled=no; :set code $c } } }
 ```
+```text student choice
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Student_Choice_3GB server=all limit-bytes-total=3221225472 comment=Student_Choice_3GB disabled=no; :set code $c } } }
+```
+```` text  big bundle
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Big_Bundle_7GB server=all limit-bytes-total=7516192768 comment=Big_Bundle_7GB disabled=no; :set code $c } } }
+````
+``` heavy user
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Heavy_User_15GB server=all limit-bytes-total=16106127360 comment=Heavy_User_15GB disabled=no; :set code $c } } }
+```
+```` hostel legend
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Hostel_Legend_45GB server=all limit-bytes-total=48318382080 comment=Hostel_Legend_45GB disabled=no; :set code $c } } }
+````
 
+for time packages
+
+```2hrs
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Two_Hour server=all limit-uptime=2h comment=Two_Hour disabled=no; :set code $c } } }
+```
+``` 4hrs
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Four_Hour server=all limit-uptime=4h comment=Four_Hour disabled=no; :set code $c } } }
+```
+```8hrs
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Eight_Hour server=all limit-uptime=8h comment=Eight_Hour disabled=no; :set code $c } } }
+```
+```full day
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Full_Day server=all limit-uptime=1d comment=Full_Day disabled=no; :set code $c } } }
+```
+```2weeks
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Two_Week server=all limit-uptime=2w comment=Two_Week disabled=no; :set code $c } } }
+```
+```1 month
+:local digits "0123456789"; :local letters "ABCDEFGHIJKLMNOPQRSTUVWXYZ"; :local n 0; :for n from=1 to=100 do={ :local code ""; :local tries 0; :while ([:len $code] = 0) do={ :set tries ($tries + 1); :if ($tries > 100) do={ :error "duplicate" }; :local c "TN"; :local i 0; :for i from=1 to=5 do={ :set c ($c . [:pick $letters [:rndnum from=0 to=25]]) }; :for i from=1 to=2 do={ :set c ($c . [:pick $digits [:rndnum from=0 to=9]]) }; :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :set c ($c . [:pick $digits [:rndnum from=0 to=9]]); :set c ($c . [:pick $letters [:rndnum from=0 to=25]]); :if ([:len [/ip hotspot user find name=$c]] = 0) do={ /ip hotspot user add name=$c password=$c profile=Month server=all limit-uptime=30d comment=Month disabled=no; :set code $c } } }
+```
 Change `profile=`, `limit-bytes-total=`, and `comment=` for your package. Profile name must match **`config.php`** → `mikrotik_profile` exactly.
 
 Verify count:
@@ -46,28 +78,69 @@ Verify count:
 
 ## Step 2 — Export from MikroTik
 
-```text
-/ip hotspot user export file=tesnet-refill-quick-surf where profile="Quick_Surf_1GB"
+Run on the router terminal (one file per package). Download each **`.rsc`** from Winbox → **Files**.
+
+**Data packages**
+
+```routeros
+/ip hotspot user export file=tesnet-quick-surf where profile="Quick_Surf_1GB"
+/ip hotspot user export file=tesnet-student-choice where profile="Student_Choice_3GB"
+/ip hotspot user export file=tesnet-big-bundle where profile="Big_Bundle_7GB"
+/ip hotspot user export file=tesnet-heavy-user where profile="Heavy_User_15GB"
+/ip hotspot user export file=tesnet-hostel-legend where profile="Hostel_Legend_45GB"
 ```
 
-Download **`tesnet-refill-quick-surf.rsc`** from the router (Files).
+**Time packages**
+
+```routeros
+/ip hotspot user export file=tesnet-2hour where profile="Two_Hour"
+/ip hotspot user export file=tesnet-4hour where profile="Four_Hour"
+/ip hotspot user export file=tesnet-8hour where profile="Eight_Hour"
+/ip hotspot user export file=tesnet-full-day where profile="Full_Day"
+/ip hotspot user export file=tesnet-2week where profile="Two_Week"
+/ip hotspot user export file=tesnet-month where profile="Month"
+```
+
+Quick count before export (expect **100** each):
+
+```routeros
+:foreach p in={"Quick_Surf_1GB";"Student_Choice_3GB";"Big_Bundle_7GB";"Heavy_User_15GB";"Hostel_Legend_45GB";"Two_Hour";"Four_Hour";"Eight_Hour";"Full_Day";"Two_Week";"Month"} do={ :put ($p . ": " . [/ip hotspot user print count-only where profile=$p]) }
+```
+
+**Optional — one combined export** (includes every hotspot user; skip test/trial users manually):
+
+```routeros
+/ip hotspot user export file=tesnet-all-vouchers
+```
 
 ---
 
 ## Step 3 — Convert `.rsc` → CSV
 
-**Python (recommended):**
+**Python (recommended)** — single file:
 
 ```powershell
 cd C:\Apache24\htdocs\hotspot-pay\scripts
-python rsc-to-csv.py "C:\path\to\tesnet-refill-quick-surf.rsc" -o "C:\path\to\refill-quick-surf.csv"
+python rsc-to-csv.py "C:\path\to\tesnet-quick-surf.rsc" -o "C:\path\to\refill-quick-surf.csv"
+```
+
+**Convert all 11 exports** (after downloading `.rsc` files into one folder):
+
+```powershell
+cd C:\Apache24\htdocs\hotspot-pay\scripts
+$src = "C:\path\to\mikrotik-exports"
+Get-ChildItem $src -Filter *.rsc | ForEach-Object {
+  python rsc-to-csv.py $_.FullName -o ($_.FullName -replace '\.rsc$','.csv')
+}
 ```
 
 **PHP:**
 
 ```powershell
-php scripts/rsc-to-csv.php "C:\path\to\tesnet-refill-quick-surf.rsc" "C:\path\to\refill-quick-surf.csv"
+php scripts/rsc-to-csv.php "C:\path\to\tesnet-quick-surf.rsc" "C:\path\to\refill-quick-surf.csv"
 ```
+
+Works for **data** (`limit-bytes-total`) and **time** (`limit-uptime`) user exports.
 
 Output format:
 
@@ -142,7 +215,7 @@ print_r(\$r);
 | All rows **skipped** | Codes already imported; export only **new** users or filter export |
 | Payment OK, no code | Pool empty — import more; check **paid_no_stock** in admin / DB |
 | Code works on MikroTik but not sold | Code never imported into SQLite — import CSV |
-| `rsc-to-csv` finds 0 users | Export must include `limit-bytes-total` lines (standard hotspot user export) |
+| `rsc-to-csv` finds 0 users | Export must include `limit-bytes-total` or `limit-uptime` (standard hotspot user export) |
 
 ---
 

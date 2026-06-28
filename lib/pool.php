@@ -14,7 +14,8 @@ function hp_seed_packages(PDO $db): void
             data_label = excluded.data_label,
             amount_pesewas = excluded.amount_pesewas,
             mikrotik_profile = excluded.mikrotik_profile,
-            sort_order = excluded.sort_order'
+            sort_order = excluded.sort_order,
+            is_active = 1'
     );
 
     foreach ($config['packages'] as $pkg) {
