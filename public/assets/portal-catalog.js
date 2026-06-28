@@ -43,7 +43,7 @@
     function renderPkgRow(pkg) {
         var featured = pkg.slug === 'student-choice' ? ' pkg-row--featured' : '';
         return (
-            '<button type="button" class="pkg-row' + featured + '" data-package="' + escapeHtml(pkg.name) + '" aria-pressed="false">' +
+            '<button type="button" class="pkg-row' + featured + '" data-package="' + escapeHtml(pkg.name) + '" data-slug="' + escapeHtml(pkg.slug) + '" data-buy-url="' + escapeHtml(pkg.buy_url) + '" aria-pressed="false">' +
                 '<span class="pkg-row-info">' +
                     '<span class="pkg-row-name">' + escapeHtml(pkg.name) + '</span>' +
                     '<span class="pkg-row-meta">' + escapeHtml(pkg.data_label) + '</span>' +
@@ -51,6 +51,61 @@
                 '<span class="pkg-row-price">' + escapeHtml(formatGhs(pkg.price_ghs)) + '</span>' +
             '</button>'
         );
+    }
+
+    function syncPkgSlugMap(packages) {
+        var map = buildPkgSlugMap(packages);
+        if (!window.PKG_SLUG || typeof window.PKG_SLUG !== 'object') {
+            window.PKG_SLUG = map;
+            return;
+        }
+        Object.keys(window.PKG_SLUG).forEach(function (key) {
+            delete window.PKG_SLUG[key];
+        });
+        Object.assign(window.PKG_SLUG, map);
+    }
+
+    function startCheckout(row) {
+        var slug = row.getAttribute('data-slug');
+        var name = row.getAttribute('data-package');
+        var buyUrl = row.getAttribute('data-buy-url');
+        if (!slug || !buyUrl) {
+            return;
+        }
+
+        var panel = document.getElementById('packagesPanel');
+        var statusEl = document.getElementById('paymentStatus');
+        var payBtn = document.getElementById('payBtn');
+
+        document.querySelectorAll('.pkg-row').forEach(function (r) {
+            r.classList.remove('selected', 'loading');
+            r.setAttribute('aria-pressed', 'false');
+        });
+        row.classList.add('selected', 'loading');
+        row.setAttribute('aria-pressed', 'true');
+        if (panel) {
+            panel.classList.add('is-paying');
+        }
+        if (payBtn) {
+            payBtn.disabled = true;
+            payBtn.classList.add('loading');
+        }
+        if (statusEl) {
+            statusEl.hidden = false;
+            statusEl.classList.add('visible');
+            statusEl.innerHTML = '<span class="spinner-inline"></span>Opening Paystack for <strong>' +
+                escapeHtml(name) + '</strong>… Please wait.';
+        }
+
+        window.location.href = buyUrl;
+    }
+
+    function bindPackageRows() {
+        document.querySelectorAll('.pkg-row').forEach(function (row) {
+            row.addEventListener('click', function () {
+                startCheckout(row);
+            });
+        });
     }
 
     function mountPortal(options) {
@@ -68,7 +123,7 @@
 
         fetchCatalog(payBase)
             .then(function (data) {
-                window.PKG_SLUG = buildPkgSlugMap(data.packages || []);
+                syncPkgSlugMap(data.packages || []);
                 var packages = data.packages || [];
                 var dataPkgs = packages.filter(function (p) { return p.kind !== 'time'; });
                 var timePkgs = packages.filter(function (p) { return p.kind === 'time'; });
@@ -131,12 +186,15 @@
 
                 if (payBtn) {
                     payBtn.hidden = false;
-                    payBtn.disabled = Object.keys(window.PKG_SLUG).length === 0;
+                    payBtn.disabled = false;
                 }
 
-                if (typeof window.portalBindPackageRows === 'function') {
-                    window.portalBindPackageRows();
+                var tapHint = document.getElementById('buyTapHint');
+                if (tapHint) {
+                    tapHint.hidden = false;
                 }
+
+                bindPackageRows();
 
                 if (statusEl) {
                     statusEl.hidden = true;
@@ -157,6 +215,7 @@
     window.TesnetPortalCatalog = {
         mount: mountPortal,
         fetch: fetchCatalog,
-        formatGhs: formatGhs
+        formatGhs: formatGhs,
+        startCheckout: startCheckout
     };
 })();
