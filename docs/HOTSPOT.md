@@ -29,7 +29,7 @@ Codes must already exist as MikroTik hotspot users (`/ip hotspot user`) with the
 | Voucher users | MikroTik **IP → Hotspot → Users** |
 | Code pool for sale | SQLite on ProBook (`storage/pool.sqlite`) |
 
-**Source for `login.html`:** `MiniISP-Landing-page/login.html` in the marketing repo (edit there, re-upload to router).
+**Source for `login.html`:** `MiniISP-Landing-page/Mikrotik pages/login.html` in the marketing repo (edit there, re-upload to router).
 
 ---
 
@@ -61,7 +61,13 @@ var PKG_SLUG = {
     'Student Choice': 'student-choice',
     'Big Bundle': 'big-bundle',
     'Heavy User': 'heavy-user',
-    'Hostel Legend': 'hostel-legend'
+    'Hostel Legend': 'hostel-legend',
+    '2-Hour': '2-hour',
+    '4-Hour': '4-hour',
+    '8-Hour': '8-hour',
+    'Full Day': 'full-day',
+    '2-Week': '2-week',
+    'Month': 'month'
 };
 ```
 
@@ -129,7 +135,7 @@ Then export and import into hotspot-pay — see [**VOUCHER_REFILL_GUIDE.md**](VO
 
 ## Upload HTML to MikroTik
 
-1. Edit `MiniISP-Landing-page/login.html` on your PC.
+1. Edit `MiniISP-Landing-page/Mikrotik pages/login.html` on your PC.
 2. Upload to router: Winbox → **Files** → hotspot HTML directory, or **IP → Hotspot → Server Profiles → Login** tab.
 3. Include `TesNet.png` if referenced.
 

@@ -32,7 +32,12 @@ hotspot-pay/
 │   ├── callback.php           # Paystack redirect → success page
 │   ├── success.php            # Show / poll for voucher code
 │   ├── webhook.php            # Paystack POST (fulfillment)
-│   └── assets/style.css
+│   └── assets/
+│       ├── success.css        # Payment success page styles
+│       ├── admin.css          # Admin UI styles
+│       ├── admin-theme.js     # Admin dark/light toggle
+│       └── tesnet-logo.png    # Brand logo (login, success, admin)
+├── index.html                 # Marketing landing (sync to MiniISP-Landing-page/)
 ├── admin/                     # Stock, import, sold codes (via /admin alias)
 │   ├── index.php
 │   ├── import.php
@@ -54,7 +59,7 @@ hotspot-pay/
 └── docs/                      # Full guides (see below)
 ```
 
-**Related files outside this folder:** `MiniISP-Landing-page/login.html` (package cards + Paystack links) — upload to MikroTik.
+**Related files outside this folder:** `MiniISP-Landing-page/Mikrotik pages/login.html` (package cards + Paystack links) — upload to MikroTik. Marketing `index.html` is kept in sync with `MiniISP-Landing-page/index.html`.
 
 ---
 
@@ -147,7 +152,8 @@ Do not commit real voucher CSVs; `data/vouchers-import.csv` is gitignored.
 
 ### 6. MikroTik
 
-- Upload `login.html` from `MiniISP-Landing-page/` to the router hotspot HTML folder
+- Upload portal files from `MiniISP-Landing-page/Mikrotik pages/` to the router hotspot HTML folder (flat — no subfolder)
+- Required: `login.html`, `status.html`, `logout.html`, `portal.css`, `portal-theme.js`, `portal-login.js`, `portal-packages.js`, `api.json`, `tesnet-logo.png`
 - Walled garden: `pay.tesnet.xyz`, `*.paystack.com`, `js.paystack.co`, `api.paystack.co`
 
 Details: **`docs/HOTSPOT.md`**
@@ -168,15 +174,7 @@ Login uses `admin_password` from `config.local.php`. Failed attempts are rate-li
 
 ## Current packages
 
-| Card name (`login.html`) | Slug | Price | MikroTik profile |
-|--------------------------|------|-------|------------------|
-| Quick Surf | `quick-surf` | GH¢ 3.50 | `Quick_Surf_1GB` |
-| Student Choice | `student-choice` | GH¢ 9.00 | `Student_Choice_3GB` |
-| Big Bundle | `big-bundle` | GH¢ 18.00 | `Big_Bundle_7GB` |
-| Heavy User | `heavy-user` | GH¢ 35.00 | `Heavy_User_15GB` |
-| Hostel Legend | `hostel-legend` | GH¢ 95.00 | `Hostel_Legend_45GB` |
-
-Test: `https://pay.tesnet.xyz/buy.php?pkg=quick-surf`
+No packages are configured. Add entries to `config.php` and follow [**docs/ADD_NEW_PACKAGE.md**](docs/ADD_NEW_PACKAGE.md) when the new catalog is ready.
 
 ---
 
@@ -224,7 +222,11 @@ Test: `https://pay.tesnet.xyz/buy.php?pkg=quick-surf`
 [ ] HTTPS + Paystack webhook registered
 [ ] PHP extensions: pdo_sqlite, curl (CLI and Apache)
 [ ] Voucher CSV imported; admin stock > 0 per package
-[ ] login.html on MikroTik with correct PAY_BASE and PKG_SLUG
+[ ] public/assets: success.css, tesnet-logo.png deployed (not legacy style.css)
+[ ] success.php + success.css on production (dev_success_preview => false)
+[ ] Mikrotik pages/login.html on router with correct PAY_BASE and PKG_SLUG
+[ ] tesnet-logo.png on router with login.html
+[ ] MiniISP-Landing-page/index.html synced if marketing is separate host
 [ ] Walled garden for pay host + Paystack
 [ ] Test payment end-to-end
 ```

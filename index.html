@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <meta
+    content="TesNet provides affordable, reliable internet solutions for homes and small hostels in Ayeduase and the KNUST area."
+    name="description" />
+  <title>TesNet — Reliable Internet in Ayeduase</title>
+  <script>
+    (function () {
+      var t = localStorage.getItem('hp-landing-theme');
+      if (t !== 'light') document.documentElement.classList.add('dark');
+    })();
+  </script>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link href="https://fonts.googleapis.com" rel="preconnect" />
+  <link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect" />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            primary: "#10b981",
+            "primary-dark": "#059669",
+            "background-light": "#f6f7f8",
+            "background-dark": "#0a0f1a",
+            "surface-light": "#ffffff",
+            "surface-dark": "#111827",
+            "text-main": "#0f172a",
+            "text-muted": "#64748b",
+          },
+          fontFamily: { display: ["Inter", "sans-serif"] },
+          boxShadow: {
+            glow: "0 0 60px -12px rgba(16, 185, 129, 0.35)",
+            card: "0 4px 24px rgba(15, 23, 42, 0.06)",
+            "card-dark": "0 4px 24px rgba(0, 0, 0, 0.35)",
+          },
+        },
+      },
+    }
+  </script>
+  <style>
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+
+    .material-symbols-outlined {
+      font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+    }
+
+    html.dark body { background-color: #0a0f1a; color: #f1f5f9; }
+    html.dark .text-text-main { color: #f1f5f9; }
+    html.dark .text-text-muted { color: #94a3b8; }
+
+    .hero-glow {
+      background:
+        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(16, 185, 129, 0.18), transparent),
+        radial-gradient(ellipse 40% 30% at 90% 20%, rgba(16, 185, 129, 0.08), transparent);
+    }
+
+    html.dark .hero-glow {
+      background:
+        radial-gradient(ellipse 70% 50% at 50% -10%, rgba(16, 185, 129, 0.22), transparent),
+        radial-gradient(ellipse 40% 30% at 10% 80%, rgba(16, 185, 129, 0.06), transparent);
+    }
+
+    .section-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.35rem 0.85rem;
+      border-radius: 9999px;
+      font-size: 0.7rem;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: #059669;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    html.dark .section-label {
+      color: #34d399;
+      background: rgba(16, 185, 129, 0.12);
+      border-color: rgba(16, 185, 129, 0.25);
+    }
+
+    .card-hover {
+      transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+    }
+
+    .card-hover:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 40px rgba(15, 23, 42, 0.1);
+    }
+
+    html.dark .card-hover:hover {
+      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.4);
+      border-color: rgba(16, 185, 129, 0.3);
+    }
+
+    .step-line::after {
+      content: '';
+      position: absolute;
+      top: 2rem;
+      left: calc(50% + 2rem);
+      width: calc(100% - 4rem);
+      height: 2px;
+      background: linear-gradient(90deg, rgba(16, 185, 129, 0.5), rgba(16, 185, 129, 0.1));
+    }
+
+    @media (max-width: 639px) {
+      .step-line::after { display: none; }
+    }
+
+    .reveal {
+      opacity: 0;
+      transform: translateY(24px);
+      transition: opacity 0.6s ease, transform 0.6s ease;
+    }
+
+    .reveal.is-visible {
+      opacity: 1;
+      transform: translateY(0);
+    }
+
+    .mobile-nav {
+      transform: translateX(100%);
+      transition: transform 0.3s ease;
+    }
+
+    .mobile-nav.is-open { transform: translateX(0); }
+
+    .nav-overlay {
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+
+    .nav-overlay.is-open {
+      opacity: 1;
+      pointer-events: auto;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+      box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+      transition: transform 0.2s, box-shadow 0.2s, filter 0.2s;
+    }
+
+    .btn-primary:hover {
+      filter: brightness(1.05);
+      box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+      transform: translateY(-1px);
+    }
+  </style>
+</head>
+
+<body class="bg-background-light text-text-main antialiased selection:bg-primary selection:text-white transition-colors duration-200">
+  <div class="nav-overlay fixed inset-0 z-40 bg-black/50 backdrop-blur-sm" id="navOverlay" aria-hidden="true"></div>
+
+  <nav class="mobile-nav fixed inset-y-0 right-0 z-50 flex w-72 flex-col border-l border-gray-200 bg-white p-6 shadow-2xl dark:border-gray-800 dark:bg-surface-dark" id="mobileNav" aria-label="Mobile navigation">
+    <div class="mb-8 flex items-center justify-between">
+      <img alt="Tesnet Solutions" class="h-8 w-auto dark:brightness-0 dark:invert" src="assets/tesnet-logo.png" />
+      <button type="button" id="navClose" class="rounded-lg p-2 text-text-muted hover:bg-gray-100 dark:hover:bg-gray-800" aria-label="Close menu">
+        <span class="material-symbols-outlined">close</span>
+      </button>
+    </div>
+    <div class="flex flex-col gap-1">
+      <a class="mobile-nav-link rounded-lg px-4 py-3 text-sm font-medium text-text-main hover:bg-primary/10 hover:text-primary" href="#about">About Us</a>
+      <a class="mobile-nav-link rounded-lg px-4 py-3 text-sm font-medium text-text-main hover:bg-primary/10 hover:text-primary" href="#services">Services</a>
+      <a class="mobile-nav-link rounded-lg px-4 py-3 text-sm font-medium text-text-main hover:bg-primary/10 hover:text-primary" href="#pricing">Pricing</a>
+      <a class="mobile-nav-link rounded-lg px-4 py-3 text-sm font-medium text-text-main hover:bg-primary/10 hover:text-primary" href="#contact">Contact</a>
+    </div>
+    <a class="btn-primary mt-6 flex items-center justify-center rounded-xl px-5 py-3 text-sm font-bold text-white" href="#pricing">
+      Buy data bundle
+    </a>
+  </nav>
+
+  <div class="relative flex min-h-screen w-full flex-col overflow-x-hidden">
+    <header class="sticky top-0 z-30 w-full border-b border-gray-200/80 bg-white/80 px-4 py-3 backdrop-blur-md dark:border-gray-800/80 dark:bg-surface-dark/80">
+      <div class="mx-auto flex max-w-6xl items-center justify-between">
+        <a href="#" class="flex items-center gap-3">
+          <img alt="Tesnet Solutions" class="h-9 w-auto dark:brightness-0 dark:invert" src="assets/tesnet-logo.png" />
+        </a>
+        <nav class="hidden items-center gap-1 md:flex">
+          <a class="rounded-lg px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-gray-100 hover:text-primary dark:hover:bg-gray-800" href="#about">About</a>
+          <a class="rounded-lg px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-gray-100 hover:text-primary dark:hover:bg-gray-800" href="#services">Services</a>
+          <a class="rounded-lg px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-gray-100 hover:text-primary dark:hover:bg-gray-800" href="#pricing">Pricing</a>
+          <a class="rounded-lg px-4 py-2 text-sm font-medium text-text-muted transition-colors hover:bg-gray-100 hover:text-primary dark:hover:bg-gray-800" href="#contact">Contact</a>
+        </nav>
+        <div class="flex items-center gap-2">
+          <button type="button" id="themeToggle" aria-label="Toggle dark mode"
+            class="flex h-9 w-9 items-center justify-center rounded-lg border border-gray-200 text-text-muted transition-colors hover:border-primary/40 hover:text-primary dark:border-gray-700">
+            <span class="material-symbols-outlined text-xl dark:hidden">dark_mode</span>
+            <span class="material-symbols-outlined text-xl hidden dark:inline">light_mode</span>
+          </button>
+          <a class="btn-primary hidden items-center justify-center rounded-xl px-4 py-2 text-sm font-bold text-white sm:inline-flex" href="#pricing">
+            Buy data
+          </a>
+          <button class="rounded-lg p-2 text-text-main md:hidden" type="button" id="navOpen" aria-label="Open menu">
+            <span class="material-symbols-outlined">menu</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Hero -->
+    <section class="relative overflow-hidden bg-surface-light py-20 sm:py-28 lg:py-36 dark:bg-background-dark">
+      <div class="hero-glow absolute inset-0"></div>
+      <div class="absolute inset-0 opacity-[0.03] dark:opacity-[0.06]"
+        style="background-image: radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0); background-size: 32px 32px;"></div>
+      <div class="relative z-10 mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="mx-auto max-w-3xl text-center">
+          <div class="reveal mb-6 flex justify-center">
+            <!-- <span class="section-label"> -->
+              <!-- <span class="material-symbols-outlined text-sm">wifi</span>
+              Ayeduase &amp; KNUST
+            </span> -->
+          </div>
+          <h1 class="reveal mx-auto text-4xl font-extrabold tracking-tight text-text-main sm:text-5xl lg:text-6xl lg:leading-[1.1]">
+            Fast, affordable internet for
+            <span class="bg-gradient-to-r from-primary to-emerald-400 bg-clip-text text-transparent">homes &amp; hostels</span>
+          </h1>
+          <p class="reveal mx-auto mt-6 max-w-2xl text-lg leading-relaxed text-text-muted sm:text-xl">
+            Buy a data bundle online with MoMo or card. Get your voucher instantly and connect to the TesNet hotspot in seconds.
+          </p>
+          <div class="reveal mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
+            <a class="btn-primary inline-flex w-full items-center justify-center gap-2 rounded-xl px-8 py-3.5 text-sm font-bold text-white sm:w-auto" href="#pricing">
+              <span class="material-symbols-outlined text-lg">shopping_cart</span>
+              Buy data bundle
+            </a>
+            <a class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-gray-300 px-8 py-3.5 text-sm font-bold text-text-main transition-colors hover:border-primary hover:text-primary dark:border-gray-600 dark:hover:border-primary sm:w-auto" href="#how-it-works">
+              How it works
+              <span class="material-symbols-outlined text-lg">arrow_forward</span>
+            </a>
+          </div>
+        </div>
+
+        <!-- Trust strip -->
+        <div class="reveal mx-auto mt-16 grid max-w-4xl grid-cols-2 gap-4 sm:grid-cols-4">
+          <div class="rounded-2xl border border-gray-200/80 bg-white/60 p-4 text-center backdrop-blur dark:border-gray-700/80 dark:bg-surface-dark/60">
+            <div class="text-2xl font-bold text-primary">11</div>
+            <div class="mt-1 text-xs font-medium text-text-muted">Plans available</div>
+          </div>
+          <div class="rounded-2xl border border-gray-200/80 bg-white/60 p-4 text-center backdrop-blur dark:border-gray-700/80 dark:bg-surface-dark/60">
+            <div class="text-2xl font-bold text-primary">MoMo</div>
+            <div class="mt-1 text-xs font-medium text-text-muted">Paystack secure</div>
+          </div>
+          <div class="rounded-2xl border border-gray-200/80 bg-white/60 p-4 text-center backdrop-blur dark:border-gray-700/80 dark:bg-surface-dark/60">
+            <div class="text-2xl font-bold text-primary">Instant</div>
+            <div class="mt-1 text-xs font-medium text-text-muted">Voucher delivery</div>
+          </div>
+          <div class="rounded-2xl border border-gray-200/80 bg-white/60 p-4 text-center backdrop-blur dark:border-gray-700/80 dark:bg-surface-dark/60">
+            <div class="text-2xl font-bold text-primary">24/7</div>
+            <div class="mt-1 text-xs font-medium text-text-muted">Local support</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- About -->
+    <section class="bg-white py-20 dark:bg-surface-dark" id="about">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <span class="section-label">About us</span>
+          <h2 class="mt-4 text-3xl font-bold tracking-tight text-text-main sm:text-4xl">Internet built for students</h2>
+          <p class="mt-4 text-lg text-text-muted">TesNet brings affordable, reliable connectivity to Ayeduase and the KNUST area — a student final-year project focused on bridging the digital divide.</p>
+        </div>
+        <div class="reveal mt-14 grid items-center gap-10 lg:grid-cols-2">
+          <div class="space-y-8">
+            <div class="flex gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <span class="material-symbols-outlined">flag</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-main">Our mission</h3>
+                <p class="mt-2 text-text-muted">Deliver stable, affordable internet tailored to students and local residents.</p>
+              </div>
+            </div>
+            <div class="flex gap-4">
+              <div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-primary/10 text-primary">
+                <span class="material-symbols-outlined">hub</span>
+              </div>
+              <div>
+                <h3 class="text-lg font-semibold text-text-main">Our approach</h3>
+                <p class="mt-2 text-text-muted">Local support, transparent pricing, and lightweight infrastructure to keep costs low without sacrificing quality.</p>
+              </div>
+            </div>
+            <div class="flex flex-wrap gap-2">
+              <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-text-muted dark:bg-gray-800">KNUST area</span>
+              <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-text-muted dark:bg-gray-800">Student-friendly</span>
+              <span class="rounded-full bg-gray-100 px-3 py-1 text-xs font-medium text-text-muted dark:bg-gray-800">No hidden fees</span>
+            </div>
+          </div>
+          <div class="overflow-hidden rounded-2xl shadow-card dark:shadow-card-dark">
+            <img alt="Students collaborating online" class="h-72 w-full object-cover lg:h-80"
+              src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=1470&q=80" loading="lazy" />
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Services -->
+    <section class="bg-background-light py-20 dark:bg-background-dark" id="services">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <!-- <span class="section-label">Services</span> -->
+          <h2 class="mt-4 text-3xl font-bold tracking-tight text-text-main sm:text-4xl">What we offer</h2>
+          <p class="mt-4 text-lg text-text-muted">Tailored solutions for stability, speed, and affordability.</p>
+        </div>
+        <div class="reveal mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          <div class="card-hover flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-7 dark:border-gray-700 dark:bg-surface-dark">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined text-2xl">router</span>
+            </div>
+            <h3 class="text-lg font-semibold text-text-main">Home broadband</h3>
+            <p class="text-sm leading-relaxed text-text-muted">Stable high-speed connection for households and remote work.</p>
+          </div>
+          <div class="card-hover flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-7 dark:border-gray-700 dark:bg-surface-dark">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined text-2xl">apartment</span>
+            </div>
+            <h3 class="text-lg font-semibold text-text-main">Hostel internet</h3>
+            <p class="text-sm leading-relaxed text-text-muted">Scalable networks for small student hostels with many devices.</p>
+          </div>
+          <div class="card-hover flex flex-col gap-4 rounded-2xl border border-gray-200 bg-white p-7 sm:col-span-2 lg:col-span-1 dark:border-gray-700 dark:bg-surface-dark">
+            <div class="flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined text-2xl">support_agent</span>
+            </div>
+            <h3 class="text-lg font-semibold text-text-main">Local support</h3>
+            <p class="text-sm leading-relaxed text-text-muted">Dedicated team in Ayeduase for quick help when you need it.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- How it works -->
+    <section class="bg-white py-20 dark:bg-surface-dark" id="how-it-works">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <!-- <span class="section-label">Simple process</span> -->
+          <h2 class="mt-4 text-3xl font-bold tracking-tight text-text-main sm:text-4xl">Get online in 3 steps</h2>
+          <p class="mt-4 text-lg text-text-muted">From payment to browsing in under a minute.</p>
+        </div>
+        <div class="reveal mt-14 grid gap-10 sm:grid-cols-3">
+          <div class="step-line relative flex flex-col items-center text-center">
+            <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-white shadow-glow">1</div>
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined">inventory_2</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-main">Choose a plan</h3>
+            <p class="mt-3 text-sm leading-relaxed text-text-muted">Pick the data bundle that fits your needs — from 1 GB to 45 GB.</p>
+          </div>
+          <div class="step-line relative flex flex-col items-center text-center">
+            <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-white shadow-glow">2</div>
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined">payments</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-main">Pay securely</h3>
+            <p class="mt-3 text-sm leading-relaxed text-text-muted">Pay with Mobile Money or card through Paystack — safe and instant.</p>
+          </div>
+          <div class="relative flex flex-col items-center text-center">
+            <div class="mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary text-lg font-bold text-white shadow-glow">3</div>
+            <div class="mb-4 flex h-12 w-12 items-center justify-center rounded-xl bg-primary/10 text-primary">
+              <span class="material-symbols-outlined">wifi</span>
+            </div>
+            <h3 class="text-lg font-bold text-text-main">Connect</h3>
+            <p class="mt-3 text-sm leading-relaxed text-text-muted">Copy your voucher code, enter it on the hotspot login page, and you're online.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Pricing -->
+    <section class="bg-background-light py-20 dark:bg-background-dark" id="pricing">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal mx-auto max-w-2xl text-center">
+          <h2 class="mt-4 text-3xl font-bold tracking-tight text-text-main sm:text-4xl" id="pricingTitle">Pricing</h2>
+          <p class="mt-4 text-lg text-text-muted" id="pricingSubtitle">New packages are being updated.</p>
+        </div>
+
+        <div class="reveal mt-10 mx-auto max-w-xl rounded-2xl border border-gray-200 bg-white p-10 text-center dark:border-gray-700 dark:bg-surface-dark">
+          <span class="material-symbols-outlined text-4xl text-primary">schedule</span>
+          <p class="mt-4 text-text-main font-semibold">Packages coming soon</p>
+          <p class="mt-2 text-sm text-text-muted">We are preparing updated plans and prices. Voucher login still works if you already have a code.</p>
+          <a class="btn-primary mt-6 inline-flex items-center justify-center rounded-xl px-6 py-3 text-sm font-bold text-white" href="#contact">Contact us</a>
+        </div>
+
+        <div class="reveal mt-8 flex items-start gap-3 rounded-2xl border border-primary/20 bg-primary/5 p-5 dark:bg-primary/10">
+          <span class="material-symbols-outlined shrink-0 text-primary">info</span>
+          <p class="text-sm text-text-muted">
+            <strong class="text-text-main">Already have a voucher?</strong>
+            Join TesNet Wi‑Fi and enter your code on the hotspot login page.
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Contact -->
+    <section class="bg-white py-20 dark:bg-surface-dark" id="contact">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="reveal overflow-hidden rounded-3xl bg-gradient-to-br from-gray-900 via-surface-dark to-gray-900 p-8 shadow-card-dark sm:p-12 lg:p-16">
+          <div class="absolute inset-0 pointer-events-none opacity-30"
+            style="background: radial-gradient(ellipse at top right, rgba(16,185,129,0.2), transparent 50%);"></div>
+          <div class="relative grid items-center gap-12 lg:grid-cols-2">
+            <div>
+              <span class="section-label">Contact</span>
+              <h2 class="mt-4 text-3xl font-bold tracking-tight text-white sm:text-4xl">Get in touch</h2>
+              <p class="mt-4 text-lg text-gray-400">Questions about setup, pricing, or support? We're here to help.</p>
+              <dl class="mt-8 space-y-5">
+                <div class="flex items-start gap-4">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span class="material-symbols-outlined text-xl">location_on</span>
+                  </div>
+                  <div>
+                    <dt class="text-sm font-medium text-gray-400">Location</dt>
+                    <dd class="mt-0.5 text-white">Ayeduase, Kumasi — Near KNUST Campus</dd>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span class="material-symbols-outlined text-xl">call</span>
+                  </div>
+                  <div>
+                    <dt class="text-sm font-medium text-gray-400">Phone</dt>
+                    <dd class="mt-0.5"><a class="text-white hover:text-primary transition-colors" href="tel:+233200504248">020 050 4248</a></dd>
+                  </div>
+                </div>
+                <div class="flex items-start gap-4">
+                  <div class="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary/20 text-primary">
+                    <span class="material-symbols-outlined text-xl">mail</span>
+                  </div>
+                  <div>
+                    <dt class="text-sm font-medium text-gray-400">Email</dt>
+                    <dd class="mt-0.5"><a class="text-white hover:text-primary transition-colors" href="mailto:tesnet5532@gmail.com">tesnet5532@gmail.com</a></dd>
+                  </div>
+                </div>
+              </dl>
+            </div>
+            <div class="overflow-hidden rounded-2xl shadow-2xl">
+              <img alt="Customer support" class="h-64 w-full object-cover lg:h-72"
+                src="https://images.unsplash.com/photo-1534536281715-e28d76689b4d?ixlib=rb-4.0.3&amp;auto=format&amp;fit=crop&amp;w=1470&amp;q=80" loading="lazy" />
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="border-t border-gray-800 bg-background-dark py-12 text-slate-400">
+      <div class="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+        <div class="grid gap-10 md:grid-cols-12">
+          <div class="md:col-span-4">
+            <img alt="Tesnet Solutions" class="h-7 w-auto brightness-0 invert" src="assets/tesnet-logo.png" />
+            <p class="mt-4 text-sm leading-relaxed">
+              Bridging the digital gap in Ayeduase with reliable, student-friendly internet solutions.
+            </p>
+          </div>
+          <div class="md:col-span-4">
+            <h3 class="text-sm font-semibold text-white">Quick links</h3>
+            <ul class="mt-4 space-y-2 text-sm">
+              <li><a class="transition-colors hover:text-white" href="#about">About us</a></li>
+              <li><a class="transition-colors hover:text-white" href="#services">Services</a></li>
+              <li><a class="transition-colors hover:text-white" href="#pricing">Pricing</a></li>
+              <li><a class="transition-colors hover:text-white" href="#contact">Contact</a></li>
+            </ul>
+          </div>
+          <div class="md:col-span-4">
+            <h3 class="text-sm font-semibold text-white">Policies</h3>
+            <ul class="mt-4 space-y-3 text-xs leading-relaxed">
+              <li><span class="font-semibold text-primary">Privacy</span> — We use your data only for service and billing. We never sell it.</li>
+              <li><span class="font-semibold text-primary">Refunds</span> — For downtime over 48 hours or failed installs. Contact within 7 days.</li>
+              <li><span class="font-semibold text-primary">Terms</span> — Legal use only. No unauthorized reselling.</li>
+            </ul>
+          </div>
+        </div>
+        <div class="mt-10 border-t border-gray-800 pt-8 text-center text-xs text-gray-500">
+          © 2026 TesNet. All rights reserved. A student initiative project.
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    (function () {
+      var themeKey = 'hp-landing-theme';
+
+      function setTheme(theme) {
+        document.documentElement.classList.toggle('dark', theme === 'dark');
+        localStorage.setItem(themeKey, theme);
+      }
+
+      function getTheme() {
+        return localStorage.getItem(themeKey) === 'light' ? 'light' : 'dark';
+      }
+
+      document.getElementById('themeToggle')?.addEventListener('click', function () {
+        setTheme(getTheme() === 'dark' ? 'light' : 'dark');
+      });
+
+      var nav = document.getElementById('mobileNav');
+      var overlay = document.getElementById('navOverlay');
+
+      function openNav() {
+        nav?.classList.add('is-open');
+        overlay?.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+
+      function closeNav() {
+        nav?.classList.remove('is-open');
+        overlay?.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
+      document.getElementById('navOpen')?.addEventListener('click', openNav);
+      document.getElementById('navClose')?.addEventListener('click', closeNav);
+      overlay?.addEventListener('click', closeNav);
+      document.querySelectorAll('.mobile-nav-link').forEach(function (link) {
+        link.addEventListener('click', closeNav);
+      });
+
+      if ('IntersectionObserver' in window) {
+        var observer = new IntersectionObserver(function (entries) {
+          entries.forEach(function (entry) {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('is-visible');
+              observer.unobserve(entry.target);
+            }
+          });
+        }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+        document.querySelectorAll('.reveal').forEach(function (el, i) {
+          el.style.transitionDelay = (i % 4) * 0.08 + 's';
+          observer.observe(el);
+        });
+      } else {
+        document.querySelectorAll('.reveal').forEach(function (el) {
+          el.classList.add('is-visible');
+        });
+      }
+    })();
+  </script>
+</body>
+
+</html>

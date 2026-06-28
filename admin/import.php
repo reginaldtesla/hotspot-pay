@@ -3,6 +3,7 @@
 declare(strict_types=1);
 
 require_once __DIR__.'/auth.php';
+require_once __DIR__.'/layout.php';
 
 hp_admin_require_login();
 
@@ -29,41 +30,40 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-$appName = (string) hp_setting('app_name', 'TesNet Pay');
+hp_admin_layout_start('Import vouchers', 'import');
 ?>
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title><?= hp_escape($appName) ?> — Import</title>
-    <link rel="stylesheet" href="../public/assets/style.css">
-    <style>
-        .links { margin-top: 1rem; }
-        .links a { color: #93c5fd; }
-        input[type=file] { width: 100%; margin: 1rem 0; color: #cbd5e1; }
-        pre { background: #0f172a; padding: 0.75rem; border-radius: 8px; font-size: 0.85rem; overflow-x: auto; }
-    </style>
-</head>
-<body>
-    <main class="card" style="max-width: 640px;">
-        <h1>Import voucher codes</h1>
-        <p class="muted">CSV columns: <code>code,profile</code> or <code>code,package_slug</code></p>
-        <pre>code,profile
-TNPMZBY84G4H,Quick_Surf_1GB</pre>
 
+<div class="admin-panel admin-form-panel">
+    <div class="admin-panel-head">
+        <div>
+            <h2>Upload voucher CSV</h2>
+            <p>Codes must already exist on MikroTik</p>
+        </div>
+    </div>
+
+    <div style="padding: 1.25rem;">
         <?php if ($message): ?>
-            <p class="success"><?= hp_escape($message) ?></p>
+            <div class="admin-alert admin-alert-success"><?= hp_escape($message) ?></div>
         <?php endif; ?>
         <?php if ($error): ?>
-            <p class="error"><?= hp_escape($error) ?></p>
+            <div class="admin-alert admin-alert-error"><?= hp_escape($error) ?></div>
         <?php endif; ?>
 
+        <p class="admin-muted-text">
+            CSV columns: <strong>code,profile</strong> or <strong>code,package_slug</strong>
+        </p>
+        <pre class="admin-pre">code,profile
+TNPMZBY84G4H,Quick_Surf_1GB</pre>
+
         <form method="post" enctype="multipart/form-data">
-            <input type="file" name="csv" accept=".csv,text/csv" required>
-            <button class="btn" type="submit">Upload CSV</button>
+            <div class="admin-field">
+                <label for="csv">CSV file</label>
+                <input type="file" id="csv" name="csv" accept=".csv,text/csv" required>
+            </div>
+            <button class="admin-btn-primary" type="submit" style="width:auto;display:inline-flex;">Upload CSV</button>
         </form>
-        <p class="links"><a href="index.php">← Back to stock</a> · <a href="sold.php">Sold codes</a></p>
-    </main>
-</body>
-</html>
+    </div>
+</div>
+
+<?php
+hp_admin_layout_end();

@@ -113,6 +113,12 @@ Must match **`hotspot-pay/config.php`**:
 | `Big_Bundle_7GB` | `big-bundle` |
 | `Heavy_User_15GB` | `heavy-user` |
 | `Hostel_Legend_45GB` | `hostel-legend` |
+| `Two_Hour` | `2-hour` |
+| `Four_Hour` | `4-hour` |
+| `Eight_Hour` | `8-hour` |
+| `Full_Day` | `full-day` |
+| `Two_Week` | `2-week` |
+| `Month` | `month` |
 
 ---
 

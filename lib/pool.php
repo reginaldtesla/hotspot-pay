@@ -27,6 +27,15 @@ function hp_seed_packages(PDO $db): void
             'sort_order' => $pkg['sort_order'],
         ]);
     }
+
+    $activeSlugs = array_column($config['packages'], 'slug');
+    if ($activeSlugs === []) {
+        $db->exec('UPDATE packages SET is_active = 0');
+    } else {
+        $placeholders = implode(',', array_fill(0, count($activeSlugs), '?'));
+        $deactivate = $db->prepare("UPDATE packages SET is_active = 0 WHERE slug NOT IN ({$placeholders})");
+        $deactivate->execute($activeSlugs);
+    }
 }
 
 function hp_get_package(PDO $db, string $slug): ?array
@@ -58,6 +67,7 @@ function hp_stock_summary(PDO $db): array
                 SUM(CASE WHEN v.status = 'revoked' THEN 1 ELSE 0 END) AS revoked
          FROM packages p
          LEFT JOIN voucher_codes v ON v.package_slug = p.slug
+         WHERE p.is_active = 1
          GROUP BY p.slug
          ORDER BY p.sort_order"
     );
@@ -65,33 +75,231 @@ function hp_stock_summary(PDO $db): array
     return $stmt->fetchAll();
 }
 
+function hp_sales_today(PDO $db): array
+{
+    $stmt = $db->query(
+        "SELECT COUNT(*) AS sales_count,
+                COALESCE(SUM(amount_pesewas), 0) AS total_pesewas
+         FROM payments
+         WHERE status = 'paid'
+           AND paid_at IS NOT NULL
+           AND date(paid_at) = date('now', 'localtime')"
+    );
+
+    $row = $stmt->fetch() ?: ['sales_count' => 0, 'total_pesewas' => 0];
+
+    return [
+        'count' => (int) $row['sales_count'],
+        'total_pesewas' => (int) $row['total_pesewas'],
+    ];
+}
+
+function hp_total_available_stock(PDO $db): int
+{
+    $stmt = $db->query(
+        "SELECT COUNT(*) FROM voucher_codes WHERE status = 'available'"
+    );
+
+    return (int) $stmt->fetchColumn();
+}
+
+function hp_recent_transactions(PDO $db, int $limit = 10): array
+{
+    $limit = max(1, min($limit, 50));
+    $stmt = $db->prepare(
+        "SELECT pay.reference, pay.status, pay.amount_pesewas, pay.paid_at, pay.created_at,
+                pay.buyer_phone, pay.buyer_email,
+                p.name AS package_name, p.data_label,
+                v.code
+         FROM payments pay
+         JOIN packages p ON p.slug = pay.package_slug
+         LEFT JOIN voucher_codes v ON v.id = pay.voucher_code_id
+         WHERE pay.status IN ('paid', 'paid_no_stock', 'pending')
+         ORDER BY COALESCE(pay.paid_at, pay.created_at) DESC
+         LIMIT :limit"
+    );
+    $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->execute();
+
+    return $stmt->fetchAll();
+}
+
+function hp_stock_health(int $available): string
+{
+    if ($available < 30) {
+        return 'critical';
+    }
+    if ($available < 75) {
+        return 'low';
+    }
+
+    return 'healthy';
+}
+
+function hp_stock_health_label(string $health): string
+{
+    return match ($health) {
+        'critical' => 'Critical',
+        'low' => 'Low',
+        default => 'Healthy',
+    };
+}
+
 function hp_sold_codes(PDO $db, int $limit = 100, ?string $packageSlug = null): array
 {
-    $limit = max(1, min($limit, 500));
-    $sql = "SELECT v.code, v.package_slug, v.paystack_reference, v.assigned_at,
-                   p.name AS package_name, p.data_label,
-                   pay.amount_pesewas, pay.paid_at, pay.reference AS payment_reference
-            FROM voucher_codes v
-            JOIN packages p ON p.slug = v.package_slug
-            LEFT JOIN payments pay ON pay.voucher_code_id = v.id
-            WHERE v.status = 'assigned'";
+    return hp_sales_history($db, [
+        'limit' => $limit,
+        'package_slug' => $packageSlug,
+        'status' => 'paid',
+    ])['rows'];
+}
 
+/**
+ * @param array{
+ *   limit?: int,
+ *   offset?: int,
+ *   package_slug?: string|null,
+ *   period?: string,
+ *   search?: string,
+ *   status?: string
+ * } $filters
+ * @return array{rows: array, total: int}
+ */
+function hp_sales_history(PDO $db, array $filters = []): array
+{
+    $limit = max(1, min((int) ($filters['limit'] ?? 50), 500));
+    $offset = max(0, (int) ($filters['offset'] ?? 0));
+    $packageSlug = trim((string) ($filters['package_slug'] ?? ''));
+    $period = (string) ($filters['period'] ?? 'all');
+    $search = trim((string) ($filters['search'] ?? ''));
+    $status = (string) ($filters['status'] ?? 'completed');
+
+    $where = ["pay.status IN ('paid', 'paid_no_stock')"];
     $params = [];
-    if ($packageSlug !== null && $packageSlug !== '') {
-        $sql .= ' AND v.package_slug = :slug';
+
+    if ($status === 'paid') {
+        $where = ["pay.status = 'paid'"];
+    } elseif ($status === 'paid_no_stock') {
+        $where = ["pay.status = 'paid_no_stock'"];
+    }
+
+    if ($packageSlug !== '') {
+        $where[] = 'pay.package_slug = :slug';
         $params['slug'] = $packageSlug;
     }
 
-    $sql .= ' ORDER BY COALESCE(v.assigned_at, pay.paid_at) DESC, v.id DESC LIMIT :limit';
+    if ($period === 'today') {
+        $where[] = "date(COALESCE(pay.paid_at, pay.created_at)) = date('now', 'localtime')";
+    } elseif ($period === '7d') {
+        $where[] = "date(COALESCE(pay.paid_at, pay.created_at)) >= date('now', 'localtime', '-7 days')";
+    } elseif ($period === '30d') {
+        $where[] = "date(COALESCE(pay.paid_at, pay.created_at)) >= date('now', 'localtime', '-30 days')";
+    }
+
+    if ($search !== '') {
+        $where[] = '(pay.reference LIKE :q OR v.code LIKE :q OR pay.buyer_phone LIKE :q OR pay.buyer_email LIKE :q)';
+        $params['q'] = '%'.$search.'%';
+    }
+
+    $whereSql = implode(' AND ', $where);
+
+    $countStmt = $db->prepare(
+        "SELECT COUNT(*) FROM payments pay
+         LEFT JOIN voucher_codes v ON v.id = pay.voucher_code_id
+         WHERE {$whereSql}"
+    );
+    foreach ($params as $key => $value) {
+        $countStmt->bindValue(':'.$key, $value);
+    }
+    $countStmt->execute();
+    $total = (int) $countStmt->fetchColumn();
+
+    $sql = "SELECT pay.reference, pay.status, pay.amount_pesewas,
+                   pay.paid_at, pay.created_at, pay.buyer_email, pay.buyer_phone,
+                   p.slug AS package_slug, p.name AS package_name, p.data_label,
+                   v.code, v.assigned_at
+            FROM payments pay
+            JOIN packages p ON p.slug = pay.package_slug
+            LEFT JOIN voucher_codes v ON v.id = pay.voucher_code_id
+            WHERE {$whereSql}
+            ORDER BY COALESCE(pay.paid_at, pay.created_at) DESC, pay.id DESC
+            LIMIT :limit OFFSET :offset";
 
     $stmt = $db->prepare($sql);
     foreach ($params as $key => $value) {
         $stmt->bindValue(':'.$key, $value);
     }
     $stmt->bindValue(':limit', $limit, PDO::PARAM_INT);
+    $stmt->bindValue(':offset', $offset, PDO::PARAM_INT);
     $stmt->execute();
 
-    return $stmt->fetchAll();
+    return [
+        'rows' => $stmt->fetchAll(),
+        'total' => $total,
+    ];
+}
+
+/** @param array<string, mixed> $filters */
+function hp_sales_history_stats(PDO $db, array $filters = []): array
+{
+    $filters['limit'] = 1;
+    $filters['offset'] = 0;
+
+    $packageSlug = trim((string) ($filters['package_slug'] ?? ''));
+    $period = (string) ($filters['period'] ?? 'all');
+    $search = trim((string) ($filters['search'] ?? ''));
+    $status = (string) ($filters['status'] ?? 'completed');
+
+    $where = ["pay.status IN ('paid', 'paid_no_stock')"];
+    $params = [];
+
+    if ($status === 'paid') {
+        $where = ["pay.status = 'paid'"];
+    } elseif ($status === 'paid_no_stock') {
+        $where = ["pay.status = 'paid_no_stock'"];
+    }
+
+    if ($packageSlug !== '') {
+        $where[] = 'pay.package_slug = :slug';
+        $params['slug'] = $packageSlug;
+    }
+
+    if ($period === 'today') {
+        $where[] = "date(COALESCE(pay.paid_at, pay.created_at)) = date('now', 'localtime')";
+    } elseif ($period === '7d') {
+        $where[] = "date(COALESCE(pay.paid_at, pay.created_at)) >= date('now', 'localtime', '-7 days')";
+    } elseif ($period === '30d') {
+        $where[] = "date(COALESCE(pay.paid_at, pay.created_at)) >= date('now', 'localtime', '-30 days')";
+    }
+
+    if ($search !== '') {
+        $where[] = '(pay.reference LIKE :q OR v.code LIKE :q OR pay.buyer_phone LIKE :q OR pay.buyer_email LIKE :q)';
+        $params['q'] = '%'.$search.'%';
+    }
+
+    $whereSql = implode(' AND ', $where);
+
+    $stmt = $db->prepare(
+        "SELECT COUNT(*) AS sale_count,
+                COALESCE(SUM(pay.amount_pesewas), 0) AS revenue_pesewas,
+                SUM(CASE WHEN pay.status = 'paid' THEN 1 ELSE 0 END) AS fulfilled,
+                SUM(CASE WHEN pay.status = 'paid_no_stock' THEN 1 ELSE 0 END) AS no_stock
+         FROM payments pay
+         LEFT JOIN voucher_codes v ON v.id = pay.voucher_code_id
+         WHERE {$whereSql}"
+    );
+    foreach ($params as $key => $value) {
+        $stmt->bindValue(':'.$key, $value);
+    }
+    $stmt->execute();
+    $row = $stmt->fetch() ?: [];
+
+    return [
+        'count' => (int) ($row['sale_count'] ?? 0),
+        'revenue_pesewas' => (int) ($row['revenue_pesewas'] ?? 0),
+        'fulfilled' => (int) ($row['fulfilled'] ?? 0),
+        'no_stock' => (int) ($row['no_stock'] ?? 0),
+    ];
 }
 
 function hp_format_ghs(int $pesewas): string

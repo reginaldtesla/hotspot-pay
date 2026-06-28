@@ -77,7 +77,11 @@ hotspot-pay/
 │   ├── callback.php
 │   ├── success.php
 │   ├── webhook.php
-│   └── assets/style.css
+│   └── assets/
+│       ├── success.css
+│       ├── admin.css
+│       ├── admin-theme.js
+│       └── tesnet-logo.png
 ├── admin/                        # Alias /admin
 │   ├── auth.php
 │   ├── index.php                 # stock summary
@@ -194,6 +198,12 @@ Convert MikroTik exports: `scripts/rsc-to-csv.py`.
 | Big Bundle | `big-bundle` | 18.00 | `Big_Bundle_7GB` |
 | Heavy User | `heavy-user` | 35.00 | `Heavy_User_15GB` |
 | Hostel Legend | `hostel-legend` | 95.00 | `Hostel_Legend_45GB` |
+| 2-Hour | `2-hour` | 4.00 | `Two_Hour` |
+| 4-Hour | `4-hour` | 8.00 | `Four_Hour` |
+| 8-Hour | `8-hour` | 16.00 | `Eight_Hour` |
+| Full Day | `full-day` | 25.00 | `Full_Day` |
+| 2-Week | `2-week` | 99.00 | `Two_Week` |
+| Month | `month` | 199.00 | `Month` |
 
 Defined in `config.php`; must stay in sync with `login.html` cards and `PKG_SLUG`.
 

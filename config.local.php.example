@@ -6,10 +6,14 @@ declare(strict_types=1);
  * Copy to config.local.php and fill in secrets (gitignored).
  */
 return [
-    'app_url' => 'https://pay.tesnet.xyz',
+    'app_url' => 'http://localhost',
+    // Set false on production. Enables ?preview=1&state=ready on success.php for local UI testing.
+    'dev_success_preview' => true,
     'paystack_public_key' => 'pk_test_xxxxxxxx',
     'paystack_secret_key' => 'sk_test_xxxxxxxx',
     'admin_password' => 'change-me-to-a-strong-password',
     // Paystack requires an email; buyers may not have one on hotspot.
     'checkout_email' => 'checkout@tesnet.xyz',
+    // Optional: override MikroTik hotspot URL shown after payment.
+    // 'hotspot_login_url' => 'http://192.168.88.1',
 ];

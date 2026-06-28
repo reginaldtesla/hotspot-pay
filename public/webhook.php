@@ -64,9 +64,13 @@ if (! hp_paystack_transaction_ok($verified, (int) $payment['amount_pesewas'])) {
     exit;
 }
 
-$customer = is_array($data['customer'] ?? null) ? $data['customer'] : [];
-$buyerEmail = isset($customer['email']) ? (string) $customer['email'] : null;
-$buyerPhone = isset($customer['phone']) ? (string) $customer['phone'] : null;
+$verifyData = is_array($verified['data'] ?? null) ? $verified['data'] : [];
+$buyer = hp_paystack_merge_buyer(
+    hp_paystack_extract_buyer($data),
+    hp_paystack_extract_buyer($verifyData)
+);
+$buyerEmail = $buyer['email'];
+$buyerPhone = $buyer['phone'];
 
 try {
     hp_fulfill_payment(

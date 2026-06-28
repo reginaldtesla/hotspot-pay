@@ -113,7 +113,7 @@ After deploy, the SQLite `packages` table updates automatically on the next page
 
 ## Step 4 — Show the package on `login.html` (hotspot)
 
-Edit **`MiniISP-Landing-page/login.html`** (then re-upload to MikroTik).
+Edit **`MiniISP-Landing-page/Mikrotik pages/login.html`** (then re-upload to MikroTik).
 
 ### 4a. Add a package card
 

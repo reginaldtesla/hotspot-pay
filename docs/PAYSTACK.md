@@ -38,7 +38,7 @@ return [
 |-----|--------|
 | `app_url` | Must match the URL students and Paystack reach (HTTPS in production, no trailing slash) |
 | `paystack_secret_key` | Used for API calls and webhook HMAC verification |
-| `checkout_email` | Paystack requires an email on initialize; hotspot buyers may not have one |
+| `checkout_email` | Paystack requires an email on initialize; hotspot buyers may not have one. **MoMo number appears in admin** (Sales / CSV) from the Paystack webhook — not in the Paystack dashboard email column. |
 
 Package amounts come from `config.php` → `amount_pesewas` (integer pesewas, e.g. GH¢ 3.50 → `350`).
 
