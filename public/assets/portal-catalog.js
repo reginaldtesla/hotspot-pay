@@ -75,7 +75,6 @@
 
         var panel = document.getElementById('packagesPanel');
         var statusEl = document.getElementById('paymentStatus');
-        var payBtn = document.getElementById('payBtn');
 
         document.querySelectorAll('.pkg-row').forEach(function (r) {
             r.classList.remove('selected', 'loading');
@@ -85,10 +84,6 @@
         row.setAttribute('aria-pressed', 'true');
         if (panel) {
             panel.classList.add('is-paying');
-        }
-        if (payBtn) {
-            payBtn.disabled = true;
-            payBtn.classList.add('loading');
         }
         if (statusEl) {
             statusEl.hidden = false;
@@ -111,7 +106,6 @@
     function mountPortal(options) {
         var payBase = options.payBase || 'https://pay.tesnet.xyz';
         var panel = document.getElementById('packagesPanel');
-        var payBtn = document.getElementById('payBtn');
         var tabsWrap = document.querySelector('.pricing-tabs-wrap');
         var statusEl = document.getElementById('paymentStatus');
 
@@ -135,10 +129,6 @@
                 if (!data.has_any_stock) {
                     panel.innerHTML =
                         '<p class="login-hint buy-empty-msg">New packages are being updated. Check back soon or contact support at 020&nbsp;050&nbsp;4248.</p>';
-                    if (payBtn) {
-                        payBtn.hidden = true;
-                        payBtn.disabled = true;
-                    }
                     if (tabsWrap) {
                         tabsWrap.hidden = true;
                     }
@@ -184,11 +174,6 @@
 
                 panel.innerHTML = html;
 
-                if (payBtn) {
-                    payBtn.hidden = false;
-                    payBtn.disabled = false;
-                }
-
                 var tapHint = document.getElementById('buyTapHint');
                 if (tapHint) {
                     tapHint.hidden = false;
@@ -205,10 +190,6 @@
             .catch(function () {
                 panel.innerHTML =
                     '<p class="login-hint buy-empty-msg">Could not load packages. Join TesNet Wi\u2011Fi and try again, or call 020&nbsp;050&nbsp;4248.</p>';
-                if (payBtn) {
-                    payBtn.hidden = true;
-                    payBtn.disabled = true;
-                }
             });
     }
 
