@@ -76,6 +76,78 @@ function hp_stock_summary(PDO $db): array
     return $stmt->fetchAll();
 }
 
+/**
+ * Public package list for captive portal and marketing site (includes live stock).
+ *
+ * @return array{
+ *   pay_base: string,
+ *   updated_at: string,
+ *   packages: list<array<string, mixed>>,
+ *   has_data_stock: bool,
+ *   has_time_stock: bool,
+ *   has_any_stock: bool
+ * }
+ */
+function hp_public_catalog(PDO $db): array
+{
+    $config = hp_config();
+    $packages = $config['packages'] ?? [];
+    usort(
+        $packages,
+        static fn (array $a, array $b): int => ($a['sort_order'] ?? 0) <=> ($b['sort_order'] ?? 0)
+    );
+
+    $stockBySlug = [];
+    foreach (hp_stock_summary($db) as $row) {
+        $stockBySlug[(string) $row['slug']] = (int) $row['available'];
+    }
+
+    $payBase = rtrim((string) hp_setting('app_url', ''), '/');
+    $catalog = [];
+    $hasDataStock = false;
+    $hasTimeStock = false;
+
+    foreach ($packages as $pkg) {
+        $slug = (string) ($pkg['slug'] ?? '');
+        if ($slug === '') {
+            continue;
+        }
+
+        $kind = (string) ($pkg['kind'] ?? 'data');
+        $available = $stockBySlug[$slug] ?? 0;
+        $inStock = $available > 0;
+
+        if ($kind === 'time' && $inStock) {
+            $hasTimeStock = true;
+        }
+        if ($kind !== 'time' && $inStock) {
+            $hasDataStock = true;
+        }
+
+        $pesewas = (int) ($pkg['amount_pesewas'] ?? 0);
+        $catalog[] = [
+            'slug' => $slug,
+            'name' => (string) ($pkg['name'] ?? $slug),
+            'data_label' => (string) ($pkg['data_label'] ?? ''),
+            'kind' => $kind,
+            'amount_pesewas' => $pesewas,
+            'price_ghs' => number_format($pesewas / 100, 2, '.', ''),
+            'available' => $available,
+            'in_stock' => $inStock,
+            'buy_url' => $payBase.'/buy.php?pkg='.rawurlencode($slug),
+        ];
+    }
+
+    return [
+        'pay_base' => $payBase,
+        'updated_at' => gmdate('c'),
+        'packages' => $catalog,
+        'has_data_stock' => $hasDataStock,
+        'has_time_stock' => $hasTimeStock,
+        'has_any_stock' => $hasDataStock || $hasTimeStock,
+    ];
+}
+
 function hp_sales_today(PDO $db): array
 {
     $stmt = $db->query(

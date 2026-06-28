@@ -33,6 +33,7 @@ return [
             'data_label' => '1GB',
             'amount_pesewas' => 350,
             'mikrotik_profile' => 'Quick_Surf_1GB',
+            'kind' => 'data',
             'sort_order' => 1,
         ],
         [
@@ -41,6 +42,7 @@ return [
             'data_label' => '3GB',
             'amount_pesewas' => 900,
             'mikrotik_profile' => 'Student_Choice_3GB',
+            'kind' => 'data',
             'sort_order' => 2,
         ],
         [
@@ -49,6 +51,7 @@ return [
             'data_label' => '7GB',
             'amount_pesewas' => 1800,
             'mikrotik_profile' => 'Big_Bundle_7GB',
+            'kind' => 'data',
             'sort_order' => 3,
         ],
         [
@@ -57,6 +60,7 @@ return [
             'data_label' => '15GB',
             'amount_pesewas' => 3500,
             'mikrotik_profile' => 'Heavy_User_15GB',
+            'kind' => 'data',
             'sort_order' => 4,
         ],
         [
@@ -65,6 +69,7 @@ return [
             'data_label' => '45GB',
             'amount_pesewas' => 9500,
             'mikrotik_profile' => 'Hostel_Legend_45GB',
+            'kind' => 'data',
             'sort_order' => 5,
         ],
         [
@@ -73,6 +78,7 @@ return [
             'data_label' => '2 Hours',
             'amount_pesewas' => 400,
             'mikrotik_profile' => 'Two_Hour',
+            'kind' => 'time',
             'sort_order' => 6,
         ],
         [
@@ -81,6 +87,7 @@ return [
             'data_label' => '4 Hours',
             'amount_pesewas' => 800,
             'mikrotik_profile' => 'Four_Hour',
+            'kind' => 'time',
             'sort_order' => 7,
         ],
         [
@@ -89,6 +96,7 @@ return [
             'data_label' => '8 Hours',
             'amount_pesewas' => 1600,
             'mikrotik_profile' => 'Eight_Hour',
+            'kind' => 'time',
             'sort_order' => 8,
         ],
         [
@@ -97,6 +105,7 @@ return [
             'data_label' => '24 Hours',
             'amount_pesewas' => 2500,
             'mikrotik_profile' => 'Full_Day',
+            'kind' => 'time',
             'sort_order' => 9,
         ],
         [
@@ -105,6 +114,7 @@ return [
             'data_label' => '2 Weeks',
             'amount_pesewas' => 9900,
             'mikrotik_profile' => 'Two_Week',
+            'kind' => 'time',
             'sort_order' => 10,
         ],
         [
@@ -113,6 +123,7 @@ return [
             'data_label' => '30 Days',
             'amount_pesewas' => 19900,
             'mikrotik_profile' => 'Month',
+            'kind' => 'time',
             'sort_order' => 11,
         ],
     ],
