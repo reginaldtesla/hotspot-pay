@@ -114,14 +114,18 @@ Failed signature → wrong `paystack_secret_key` or body modified by proxy.
 
 ## MikroTik walled garden (Paystack)
 
-Students need these **before** hotspot login:
+Students need these **before** hotspot login. Use **both** tables (see `docs/MIKROTIK_SITE_SETUP.md` §11 and `tesnet-walled-garden.rsc`):
 
 | Host |
 |------|
 | Your pay host (`pay.tesnet.xyz`) |
-| `*.paystack.com` |
-| `js.paystack.co` |
+| `checkout.paystack.com` |
+| `standard.paystack.co` |
 | `api.paystack.co` |
+| `js.paystack.co` |
+| `*.paystack.com` |
+
+`net::ERR_CONNECTION_CLOSED` on checkout → IP walled garden (`/ip hotspot walled-garden ip`) is missing or incomplete.
 
 ---
 

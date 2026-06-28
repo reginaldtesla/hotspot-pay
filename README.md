@@ -190,6 +190,7 @@ No packages are configured. Add entries to `config.php` and follow [**docs/ADD_N
 | [**docs/HOTSPOT_VOUCHER_PAY.md**](docs/HOTSPOT_VOUCHER_PAY.md) | Architecture, database, payment flow |
 | [**docs/PAYSTACK.md**](docs/PAYSTACK.md) | Keys, webhooks, test vs live |
 | [**docs/MIKROTIK_SITE_SETUP.md**](docs/MIKROTIK_SITE_SETUP.md) | MikroTik factory reset, dual Turbonet WAN, hotspot from scratch |
+| [**docs/MIKROTIK_SECOND_TURbonet_ETHER2.md**](docs/MIKROTIK_SECOND_TURbonet_ETHER2.md) | Plug in Turbonet #3 on ether2, backup route, verify failover |
 | [**docs/HOTSPOT.md**](docs/HOTSPOT.md) | MikroTik walled garden, `login.html` |
 | [**docs/VOUCHER_REFILL_GUIDE.md**](docs/VOUCHER_REFILL_GUIDE.md) | Add more codes to an existing package |
 | [**docs/ADD_NEW_PACKAGE.md**](docs/ADD_NEW_PACKAGE.md) | New profile, price, and login card |

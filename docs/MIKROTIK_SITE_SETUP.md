@@ -150,6 +150,8 @@ Wire **Turbonet LAN → MikroTik ether1** and **Turbonet LAN → MikroTik ether2
 
 ### 7.1 One Turbonet now — second Turbonet later
 
+**Plug-in guide (ether2 only):** [**MIKROTIK_SECOND_TURbonet_ETHER2.md**](MIKROTIK_SECOND_TURbonet_ETHER2.md)
+
 You can run **all commands below** with only **ether1** connected. Pre-configure **ether2** anyway; when the second Turbonet arrives, plug it into **ether2** — no router reset needed.
 
 | State | What happens |
@@ -311,23 +313,54 @@ If `/interface wireless` is missing and you have **`/interface wifi`** instead, 
 
 ## 11. Walled garden (pay before login)
 
-Students are **not** authenticated when they open Paystack. Allow these hosts:
+Students are **not** authenticated when they open Paystack. **HTTPS checkout needs both tables** on most RouterOS versions:
+
+| Table | CLI path | Used for |
+|-------|----------|----------|
+| HTTP walled garden | `/ip hotspot walled-garden` | Hostname / redirect matching |
+| IP walled garden | `/ip hotspot walled-garden ip` | **HTTPS** to Paystack (required) |
+
+**Import script (recommended):** upload `MiniISP-Landing-page/mikrotik script for rsv-cvs/tesnet-walled-garden.rsc` → `/import file-name=tesnet-walled-garden.rsc`
+
+**Or paste manually:**
 
 ```routeros
+# HTTP walled garden
+/ip hotspot walled-garden add dst-host=pay.tesnet.xyz action=allow comment="TesNet Pay"
+/ip hotspot walled-garden add dst-host=checkout.paystack.com action=allow comment="Paystack checkout"
+/ip hotspot walled-garden add dst-host=standard.paystack.co action=allow comment="Paystack standard"
+/ip hotspot walled-garden add dst-host=api.paystack.co action=allow comment="Paystack API"
+/ip hotspot walled-garden add dst-host=js.paystack.co action=allow comment="Paystack JS"
+/ip hotspot walled-garden add dst-host=*.paystack.com action=allow comment="Paystack subdomains"
+
+# IP walled garden (HTTPS — fixes ERR_CONNECTION_CLOSED on checkout)
 /ip hotspot walled-garden ip add dst-host=pay.tesnet.xyz action=accept comment="TesNet Pay"
-/ip hotspot walled-garden ip add dst-host=tesnet.xyz action=accept comment="TesNet marketing"
-/ip hotspot walled-garden ip add dst-host=*.paystack.com action=accept comment="Paystack"
-/ip hotspot walled-garden ip add dst-host=js.paystack.co action=accept
-/ip hotspot walled-garden ip add dst-host=api.paystack.co action=accept
-/ip hotspot walled-garden ip add dst-host=checkout.paystack.com action=accept
-/ip hotspot walled-garden ip add dst-host=standard.paystack.co action=accept
+/ip hotspot walled-garden ip add dst-host=checkout.paystack.com action=accept comment="Paystack checkout"
+/ip hotspot walled-garden ip add dst-host=standard.paystack.co action=accept comment="Paystack standard"
+/ip hotspot walled-garden ip add dst-host=api.paystack.co action=accept comment="Paystack API"
+/ip hotspot walled-garden ip add dst-host=js.paystack.co action=accept comment="Paystack JS"
 ```
 
 Verify — **no** open-internet rules:
 
 ```routeros
+/ip hotspot walled-garden print
 /ip hotspot walled-garden ip print
 ```
+
+### Paystack checkout fails on phone (`net::ERR_CONNECTION_CLOSED`)
+
+| Cause | Fix |
+|-------|-----|
+| Walled garden not configured | Run `tesnet-walled-garden.rsc` above |
+| Only HTTP table, no **IP** table | Add `/ip hotspot walled-garden ip` entries for `checkout.paystack.com` |
+| Home server / tunnel down | `pay.tesnet.xyz` must load in phone browser **before** login |
+| Paystack opens but page blank | Add `public-files-paystack-prod.s3.eu-west-1.amazonaws.com` to HTTP walled garden (in `.rsc` script) |
+
+**Test before login (on student Wi‑Fi):**
+
+1. Browser → `https://pay.tesnet.xyz/` — should load  
+2. Tap a package → `https://checkout.paystack.com/...` — should load (not connection closed)
 
 | Never add | Why |
 |-----------|-----|
@@ -433,7 +466,8 @@ Guides:
 | Symptom | Check |
 |---------|--------|
 | No login page | Files in `hotspot/`; profile `html-directory=hotspot` |
-| Paystack / pay page won’t load | Walled garden; both Turbonets online |
+| Paystack / pay page won’t load | Walled garden **HTTP + IP** tables; both Turbonets online |
+| `checkout.paystack.com` ERR_CONNECTION_CLOSED | Add IP walled garden for `checkout.paystack.com` — see `tesnet-walled-garden.rsc` |
 | Internet after login fails | NAT on ether1/ether2; default routes |
 | `pay.tesnet.xyz` down | Home Turbonet #1 + ProBook + `cloudflared` |
 | Paid but no code | Paystack webhook; voucher stock in admin |
@@ -465,6 +499,7 @@ Guides:
 
 | Doc | Topic |
 |-----|--------|
+| [**MIKROTIK_SECOND_TURbonet_ETHER2.md**](MIKROTIK_SECOND_TURbonet_ETHER2.md) | Plug in 2nd site Turbonet on ether2 |
 | [**HOTSPOT.md**](HOTSPOT.md) | Portal JS, walled garden, package sync |
 | [**INSTALL_UBUNTU_CLOUDFLARE.md**](INSTALL_UBUNTU_CLOUDFLARE.md) | ProBook server + tunnel |
 | [**PAYSTACK.md**](PAYSTACK.md) | Webhooks and keys |
